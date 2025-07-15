@@ -1,0 +1,15 @@
+{
+  "plugin_libraries": [
+    "build/lib/libmidas_event_unpacker_plugin.so"
+  ],
+  "pipeline": [
+    {
+      "id": "unpacker",
+      "type": "MidasEventUnpackerStage",
+      "parameters": {
+        "pipeline_config_file": "config/unpacker_configs/HDSoC_config.json"
+      },
+      "next": []
+    }
+  ]
+}
