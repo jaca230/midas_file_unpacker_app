@@ -1,0 +1,21 @@
+{
+  "plugin_libraries": [
+    "build/lib/libunpacker_data_products_core.so",
+    "build/lib/libunpacker_data_products_nalu.so",
+    "build/lib/libunpacker_stages_core.so",
+    "build/lib/libunpacker_stages_nalu.so"
+  ],
+  "pipeline": [
+    {
+      "id": "random_data",
+      "type": "RandomDataGeneratorStage",
+      "parameters": {
+        "product_name": "random_values_timing",
+        "min": 0.0,
+        "max": 10.0,
+        "seed": 1234
+      },
+      "next": []
+    }
+  ]
+}

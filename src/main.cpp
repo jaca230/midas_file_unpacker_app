@@ -1,57 +1,83 @@
 #include <iostream>
 #include <filesystem>
 #include <memory>
-#include <ctime>
-#include "config/config_manager.h"
-#include "pipeline/pipeline.h"
+#include <string>
+#include <cstdlib>
+#include "analysis_pipeline/config/config_manager.h"
+#include "analysis_pipeline/pipeline/pipeline.h"
 #include "midasio.h"
 #include <nlohmann/json.hpp>
 
-// Create a dummy MIDAS event
-TMEvent makeDummyEvent(int event_id, int serial, const std::string& payload) {
-    TMEvent evt;
-    evt.Init(event_id, serial, 0xABCD, static_cast<uint32_t>(std::time(nullptr)));
-    evt.AddBank("DUMY", TID_STRING, payload.c_str(), payload.size() + 1);
-    evt.FindAllBanks();
-    return evt;
-}
-
 int main(int argc, char** argv) {
-    // Locate config directory
-    std::filesystem::path sourcePath = __FILE__;
-    std::filesystem::path configDir = sourcePath.parent_path().parent_path() / "config";
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " input_midas_file max_events\n";
+        return EXIT_FAILURE;
+    }
 
-    std::vector<std::string> configPaths = {
-        (configDir / "logger.json").string(),
-        (configDir / "main_pipeline.json").string()
+    std::string input_file = argv[1];
+    int max_events = std::atoi(argv[2]);
+    if (max_events <= 0) {
+        std::cerr << "max_events must be a positive integer\n";
+        return EXIT_FAILURE;
+    }
+
+    if (!std::filesystem::exists(input_file)) {
+        std::cerr << "Input file does not exist: " << input_file << "\n";
+        return EXIT_FAILURE;
+    }
+
+    // Setup config directory and load configs
+    std::filesystem::path base_dir = std::filesystem::path(__FILE__).parent_path().parent_path();
+    std::filesystem::path config_dir = base_dir / "config";
+
+    std::vector<std::string> config_files = {
+        (config_dir / "logger.json").string(),
+        (config_dir / "main_pipeline.json").string()
     };
 
-    auto configManager = std::make_shared<ConfigManager>();
-    if (!configManager->loadFiles(configPaths) || !configManager->validate()) {
-        std::cerr << "Error: Failed to load or validate configuration." << std::endl;
-        return 1;
+    auto config_manager = std::make_shared<ConfigManager>();
+    if (!config_manager->loadFiles(config_files) || !config_manager->validate()) {
+        std::cerr << "Failed to load or validate config files\n";
+        return EXIT_FAILURE;
     }
 
-    Pipeline pipeline(configManager);
+    Pipeline pipeline(config_manager);
     if (!pipeline.buildFromConfig()) {
-        std::cerr << "Error: Failed to build pipeline." << std::endl;
-        return 1;
+        std::cerr << "Failed to build pipeline\n";
+        return EXIT_FAILURE;
     }
 
-    // Make a dummy event and feed it to the pipeline
-    TMEvent dummy = makeDummyEvent(42, 999, "HELLO_FROM_TEST");
-    InputBundle input;
-    input.setRef("TMEvent", dummy);  // Pass reference by key into bundle
-    pipeline.setInputData(std::move(input));
-    pipeline.execute();
+    // Open MIDAS file
+    TMReaderInterface* reader = TMNewReader(input_file.c_str());
+    if (!reader) {
+        std::cerr << "Failed to open MIDAS file: " << input_file << "\n";
+        return EXIT_FAILURE;
+    }
 
-    // Serialize output
-    nlohmann::json output = pipeline.getDataProductManager().serializeAll();
-    nlohmann::json outJson;
-    outJson["serialized_pipeline_products"] = output;
+    int event_count = 0;
+    while (event_count < max_events) {
+        TMEvent* event = TMReadEvent(reader);
+        if (!event) break; // EOF or error
 
-    std::cout << "\n[Pretty JSON Output from Dummy Event]\n";
-    std::cout << outJson.dump(4) << std::endl;
+        // Wrap raw pointer in shared_ptr with default deleter
+        std::shared_ptr<TMEvent> event_ptr(event);
 
-    return 0;
+        InputBundle input;
+        input.set("TMEvent", event_ptr);
+
+        pipeline.setInputData(std::move(input));
+        pipeline.execute();
+
+        nlohmann::json output = pipeline.getDataProductManager().serializeAll();
+        std::cout << "Event #" << event_count+1 << " serialized output:\n";
+        std::cout << output.dump(4) << "\n\n";
+
+        ++event_count;
+    }
+
+    delete reader; // Clean up MIDAS reader
+
+    std::cout << "Processed " << event_count << " events.\n";
+
+    return EXIT_SUCCESS;
 }

@@ -8,31 +8,25 @@
 
 
 set(CPM_PACKAGE_LIST
-  spdlog
-  nlohmann_json
+  analysis_pipeline_core
   TBB
-  AnalysisPipelineStagesCore
-  AnalysisPipeline
+  analysis_pipeline
+  unpacker_data_products_core
   midas_event_unpacker_plugin
+  byte_stream_unpacker_plugin
+  unpacker_data_products_nalu
+  unpacker_stages_core
 )
 
-
-# ---------------------- spdlog ----------------------
-set(spdlog_REPO   "gabime/spdlog")
-set(spdlog_TAG    "v1.13.0")
-set(spdlog_TARGET "")
-set(spdlog_DOWNLOAD_ONLY YES)
-set(spdlog_OPTIONS
-  "SPDLOG_BUILD_TESTS OFF"
-  "SPDLOG_BUILD_EXAMPLE OFF"
+# ---------------------- analysis_pipeline_core ----------------------
+set(analysis_pipeline_core_REPO   "jaca230/analysis_pipeline_core")
+set(analysis_pipeline_core_TAG    "main")
+set(analysis_pipeline_core_TARGETS
+  analysis_pipeline::analysis_pipeline_core
+  analysis_pipeline::spdlog_header_only
+  analysis_pipeline::nlohmann_json_header_only
 )
-
-# ---------------------- nlohmann_json ----------------------
-set(nlohmann_json_REPO   "nlohmann/json")
-set(nlohmann_json_TAG    "v3.11.3")
-set(nlohmann_json_TARGET "")
-set(nlohmann_json_DOWNLOAD_ONLY YES)
-set(nlohmann_json_OPTIONS
+set(analysis_pipeline_core_OPTIONS
   "CMAKE_POSITION_INDEPENDENT_CODE ON"
 )
 
@@ -44,28 +38,54 @@ set(TBB_OPTIONS
   "TBB_TEST OFF;TBB_STRICT OFF;TBB_EXAMPLES OFF;CMAKE_POSITION_INDEPENDENT_CODE ON"
 )
 
-# ---------------------- analysis_pipeline_stages ----------------------
-set(AnalysisPipelineStagesCore_REPO   "jaca230/analysis_pipeline_stages_core")
-set(AnalysisPipelineStagesCore_TAG    "main")
-set(AnalysisPipelineStagesCore_TARGET "AnalysisPipelineStagesCore::analysis_pipeline_stages_core")
-set(AnalysisPipelineStagesCore_OPTIONS
-  "CMAKE_POSITION_INDEPENDENT_CODE ON"
-)
 
 # ---------------------- analysis_pipeline ----------------------
-set(AnalysisPipeline_REPO   "jaca230/analysis_pipeline")
-set(AnalysisPipeline_TAG    "main")
-set(AnalysisPipeline_TARGET "AnalysisPipeline::analysis_pipeline")
-set(AnalysisPipeline_OPTIONS
+set(analysis_pipeline_REPO   "jaca230/analysis_pipeline")
+set(analysis_pipeline_TAG    "main")
+set(analysis_pipeline_TARGET "analysis_pipeline::analysis_pipeline")
+set(analysis_pipeline_OPTIONS
   "CMAKE_POSITION_INDEPENDENT_CODE ON"
   "BUILD_EXAMPLE_PLUGIN OFF"
 )
 
+# ---------------------- unpacker_data_products_core ----------------------
+set(unpacker_data_products_core_REPO   "jaca230/unpacker_data_products_core")
+set(unpacker_data_products_core_TAG    "main")
+set(unpacker_data_products_core_TARGET "") # Dynamically linked
+set(unpacker_data_products_coren_OPTIONS
+  "CMAKE_POSITION_INDEPENDENT_CODE ON"
+)
+
+
 # ---------------------- midas_event_unpacker_plugin ----------------------
 set(midas_event_unpacker_plugin_REPO   "jaca230/midas_event_unpacker_plugin")
 set(midas_event_unpacker_plugin_TAG    "main")
-set(midas_event_unpacker_plugin_TARGET "midas_event_unpacker_plugin::midas_event_unpacker_plugin")
+set(midas_event_unpacker_plugin_TARGET "analysis_pipeline::midas_event_unpacker_plugin")
 set(midas_event_unpacker_plugin_OPTIONS
   "CMAKE_POSITION_INDEPENDENT_CODE ON"
   "USE_BUNDLED_MIDAS ON"
+)
+
+# ---------------------- midas_event_unpacker_plugin ----------------------
+set(byte_stream_unpacker_plugin_REPO   "jaca230/byte_stream_unpacker_plugin")
+set(byte_stream_unpacker_plugin_TAG    "main")
+set(byte_stream_unpacker_plugin_TARGET "analysis_pipeline::byte_stream_unpacker_plugin")
+set(byte_stream_unpacker_plugin_OPTIONS
+  "CMAKE_POSITION_INDEPENDENT_CODE ON"
+)
+
+# ---------------------- unpacker_data_products_nalu ----------------------
+set(unpacker_data_products_nalu_REPO   "jaca230/unpacker_data_products_nalu")
+set(unpacker_data_products_nalu_TAG    "main")
+set(unpacker_data_products_nalu_TARGET "analysis_pipeline::unpacker_data_products_nalu")
+set(unpacker_data_products_nalu_OPTIONS
+  "CMAKE_POSITION_INDEPENDENT_CODE ON"
+)
+
+# ---------------------- unpacker_stages_core ----------------------
+set(unpacker_stages_core_REPO   "jaca230/unpacker_stages_core")
+set(unpacker_stages_core_TAG    "main")
+set(unpacker_stages_core_TARGET "analysis_pipeline::unpacker_stages_core")
+set(unpacker_stages_core_OPTIONS
+  "CMAKE_POSITION_INDEPENDENT_CODE ON"
 )
