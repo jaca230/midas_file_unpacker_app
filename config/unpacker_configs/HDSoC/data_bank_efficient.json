@@ -1,0 +1,53 @@
+{
+  "plugin_libraries": [
+    "build/lib/libunpacker_data_products_nalu.so",
+    "build/lib/libunpacker_stages_nalu.so"
+  ],
+  "pipeline": [
+    {
+      "id": "event_header_unpacker",
+      "type": "ByteStreamToReflectedDataProductStage",
+      "parameters": {
+        "input_byte_stream_product_name": "bytestream_bank_AD%0",
+        "root_class_name": "dataProducts::NaluEventHeader",
+        "default_endianness": "little",
+        "data_product_name": "NaluEventHeader"
+      },
+      "next": ["packet_collection_unpacker"]
+    },
+    {
+      "id": "packet_collection_unpacker",
+      "type": "ByteStreamToNaluPacketCollectionStage",
+      "parameters": {
+        "input_byte_stream_product_name": "bytestream_bank_AD%0",
+        "repeat_count_product_name": "NaluEventHeader",
+        "repeat_count_product_member": "num_packets",
+        "endianness": "little",
+        "output_product": "NaluPacketCollection"
+      },
+      "next": ["event_footer_unpacker"]
+    },
+    {
+      "id": "event_footer_unpacker",
+      "type": "ByteStreamToReflectedDataProductStage",
+      "parameters": {
+        "input_byte_stream_product_name": "bytestream_bank_AD%0",
+        "root_class_name": "dataProducts::NaluEventFooter",
+        "default_endianness": "little",
+        "data_product_name": "NaluEventFooter"
+      },
+      "next": ["event_former"]
+    },
+    {
+      "id": "event_former",
+      "type": "NaluEventFormingStage",
+      "parameters": {
+        "header_name": "NaluEventHeader",
+        "footer_name": "NaluEventFooter",
+        "packet_collection": "NaluPacketCollection",
+        "output_product": "NaluEvent"
+      },
+      "next": []
+    }
+  ]
+}

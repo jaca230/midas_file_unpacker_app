@@ -2,7 +2,8 @@
   "plugin_libraries": [
     "build/lib/libunpacker_data_products_core.so",
     "build/lib/libmidas_event_unpacker_plugin.so",
-    "build/lib/libbyte_stream_unpacker_plugin.so"
+    "build/lib/libbyte_stream_unpacker_plugin.so",
+    "build/lib/libunpacker_stages_core.so"
   ],
   "pipeline": [
     {
@@ -12,25 +13,25 @@
         "metadata_product_name": "event_metadata",
         "bank_product_name_prefix": "bytestream_bank_"
       },
-      "next": ["unpack_ad00", "unpack_at00"]
+      "next": ["unpack_AD00", "unpack_AT00"]
     },
     {
-      "id": "unpack_ad00",
+      "id": "unpack_AD00",
       "type": "ByteStreamUnpackerStage",
       "parameters": {
         "input_product_name": "bytestream_bank_AD%0",
         "internal_product_name": "bytestream_bank_AD%0",
-        "pipeline_config_file": "config/unpacker_configs/HDSoC_data_bank.json"
+        "pipeline_config_file": "config/unpacker_configs/HDSoC/data_bank_efficient.json"
       },
       "next": ["cleanup_bytestream"]
     },
     {
-      "id": "unpack_at00",
+      "id": "unpack_AT00",
       "type": "ByteStreamUnpackerStage",
       "parameters": {
         "input_product_name": "bytestream_bank_AT%0",
-        "internal_product_name": "bytestream_bank_ADT%0",
-        "pipeline_config_file": "config/unpacker_configs/HDSoC_timing_bank.json"
+        "internal_product_name": "bytestream_bank_AT%0",
+        "pipeline_config_file": "config/unpacker_configs/HDSoC/timing_bank_explicit.json"
       },
       "next": ["cleanup_bytestream"]
     },
@@ -38,7 +39,7 @@
       "id": "cleanup_bytestream",
       "type": "ClearProductsStage",
       "parameters": {
-        "tags": ["built_by_midas_event_to_bytestream_stage", "byte_stream"]
+        "tags": ["built_by_midas_event_to_bytestream_stage", "byte_stream", "internal"]
       },
       "next": []
     }

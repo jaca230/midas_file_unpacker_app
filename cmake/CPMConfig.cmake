@@ -16,6 +16,7 @@ set(CPM_PACKAGE_LIST
   byte_stream_unpacker_plugin
   unpacker_data_products_nalu
   unpacker_stages_core
+  unpacker_stages_nalu
 )
 
 # ---------------------- analysis_pipeline_core ----------------------
@@ -87,5 +88,13 @@ set(unpacker_stages_core_REPO   "jaca230/unpacker_stages_core")
 set(unpacker_stages_core_TAG    "main")
 set(unpacker_stages_core_TARGET "analysis_pipeline::unpacker_stages_core")
 set(unpacker_stages_core_OPTIONS
+  "CMAKE_POSITION_INDEPENDENT_CODE ON"
+)
+
+# ---------------------- unpacker_stages_nalu ----------------------
+set(unpacker_stages_nalu_REPO   "jaca230/unpacker_stages_nalu")
+set(unpacker_stages_nalu_TAG    "main")
+set(unpacker_stages_nalu_TARGET "analysis_pipeline::unpacker_stages_nalu")
+set(unpacker_stages_nalu_OPTIONS
   "CMAKE_POSITION_INDEPENDENT_CODE ON"
 )

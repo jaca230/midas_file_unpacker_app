@@ -16,7 +16,7 @@ EXE_ARGS=()
 
 # Help message
 show_help() {
-    echo "Usage: ./run.sh [OPTIONS] -- <input_midas_file> <max_events>"
+    echo "Usage: ./run.sh [OPTIONS] -- <input_midas_file> [max_events]"
     echo
     echo "Options:"
     echo "  -h, --help           Display this help message"
@@ -26,7 +26,7 @@ show_help() {
     echo
     echo "Arguments after '--' must include:"
     echo "  input_midas_file      Path to input MIDAS file"
-    echo "  max_events            Maximum number of events to process (positive integer)"
+    echo "  max_events            (Optional) Max number of events to process (positive integer)"
     echo
     echo "Example:"
     echo "  ./run.sh -- midas_file.mid.lz4 100"
@@ -52,18 +52,18 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-# Validate required arguments
-if [ "${#EXE_ARGS[@]}" -lt 2 ]; then
-    echo "[run.sh, ERROR] Missing required arguments: input_midas_file and max_events"
+# Validate required argument: input MIDAS file
+if [ "${#EXE_ARGS[@]}" -lt 1 ]; then
+    echo "[run.sh, ERROR] Missing required argument: input_midas_file"
     show_help
     exit 1
 fi
 
 INPUT_FILE="${EXE_ARGS[0]}"
-MAX_EVENTS="${EXE_ARGS[1]}"
+MAX_EVENTS="${EXE_ARGS[1]:-}"
 
-if ! [[ "$MAX_EVENTS" =~ ^[0-9]+$ ]] || [ "$MAX_EVENTS" -le 0 ]; then
-    echo "[run.sh, ERROR] max_events must be a positive integer"
+if [[ -n "$MAX_EVENTS" && (! "$MAX_EVENTS" =~ ^[0-9]+$ || "$MAX_EVENTS" -le 0) ]]; then
+    echo "[run.sh, ERROR] max_events must be a positive integer if specified"
     exit 1
 fi
 
@@ -85,16 +85,28 @@ cd "$BASE_DIR" || {
     exit 1
 }
 
-# Run executable with required arguments explicitly
+# Run executable
+echo "[run.sh, INFO] Running analysis_pipeline..."
 if [ "$DEBUG" = true ]; then
     echo "[run.sh, INFO] Running with gdb..."
-    gdb --args "$EXECUTABLE" "$INPUT_FILE" "$MAX_EVENTS"
+    if [[ -n "$MAX_EVENTS" ]]; then
+        gdb --args "$EXECUTABLE" "$INPUT_FILE" "$MAX_EVENTS"
+    else
+        gdb --args "$EXECUTABLE" "$INPUT_FILE"
+    fi
 elif [ "$VALGRIND" = true ]; then
     echo "[run.sh, INFO] Running with valgrind..."
-    valgrind --leak-check=full --track-origins=yes "$EXECUTABLE" "$INPUT_FILE" "$MAX_EVENTS"
+    if [[ -n "$MAX_EVENTS" ]]; then
+        valgrind --leak-check=full --track-origins=yes "$EXECUTABLE" "$INPUT_FILE" "$MAX_EVENTS"
+    else
+        valgrind --leak-check=full --track-origins=yes "$EXECUTABLE" "$INPUT_FILE"
+    fi
 else
-    echo "[run.sh, INFO] Running analysis_pipeline..."
-    "$EXECUTABLE" "$INPUT_FILE" "$MAX_EVENTS"
+    if [[ -n "$MAX_EVENTS" ]]; then
+        "$EXECUTABLE" "$INPUT_FILE" "$MAX_EVENTS"
+    else
+        "$EXECUTABLE" "$INPUT_FILE"
+    fi
 fi
 
 # Return to original directory
