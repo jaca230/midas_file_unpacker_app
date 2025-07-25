@@ -164,11 +164,15 @@ int main(int argc, char** argv) {
 
             double eps = (elapsed > 0) ? static_cast<double>(event_count) / elapsed : 0.0;
             double percent = 100.0 * event_count / total_events_to_process;
+            double remaining_time = (eps > 0.0) ? (total_events_to_process - event_count) / eps : 0.0;
 
-            std::cout << "[Progress] " << std::fixed << std::setprecision(1)
-                      << percent << "% (" << event_count << "/" << total_events_to_process << ")"
-                      << " | Time: " << std::setprecision(2) << elapsed << " s"
-                      << " | Rate: " << eps << " events/s\n";
+            std::cout << std::fixed
+                    << "[Progress] "
+                    << std::setw(6) << std::setprecision(1) << percent << "% "
+                    << "(" << std::setw(7) << event_count << "/" << total_events_to_process << ")"
+                    << " | Time: " << std::setw(7) << std::setprecision(2) << elapsed << " s"
+                    << " | Rate: " << std::setw(8) << std::setprecision(2) << eps << " events/s"
+                    << " | ETA: " << std::setw(7) << std::setprecision(2) << remaining_time << " s\n";
 
             next_progress_event += progress_step;
         }
@@ -188,17 +192,15 @@ int main(int argc, char** argv) {
     output_file.Close();
     delete reader;
 
-    // ----------------------------------
-    // Print summary
-    // ----------------------------------
     std::cout << "\n----------------------------------------\n";
     std::cout << "           Processing Summary\n";
     std::cout << "----------------------------------------\n";
-    std::cout << std::left << std::setw(25) << "Events processed:" << event_count << "\n";
-    std::cout << std::left << std::setw(25) << "Elapsed time (s):" << std::fixed << std::setprecision(2) << duration_sec << "\n";
-    std::cout << std::left << std::setw(25) << "Events per second:" << std::fixed << std::setprecision(2) << rate << "\n";
-    std::cout << "Output written to: output.root\n";
+    std::cout << std::left << std::setw(25) << "Events processed:"      << std::right << std::setw(10) << event_count     << "\n";
+    std::cout << std::left << std::setw(25) << "Elapsed time (s):"     << std::right << std::setw(10) << std::fixed << std::setprecision(2) << duration_sec << "\n";
+    std::cout << std::left << std::setw(25) << "Events per second:"    << std::right << std::setw(10) << std::fixed << std::setprecision(2) << rate         << "\n";
+    std::cout << std::left << std::setw(25) << "Output written to:"    << std::right << " " << "output.root" << "\n";
     std::cout << "----------------------------------------\n";
+
 
     return EXIT_SUCCESS;
 }
