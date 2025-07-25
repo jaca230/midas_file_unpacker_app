@@ -1,9 +1,10 @@
 {
   "plugin_libraries": [
-    "build/lib/libunpacker_data_products_core.so",
     "build/lib/libmidas_event_unpacker_plugin.so",
-    "build/lib/libbyte_stream_unpacker_plugin.so",
-    "build/lib/libunpacker_stages_core.so"
+    "build/lib/libunpacker_data_products_core.so",
+    "build/lib/libunpacker_data_products_nalu.so",
+    "build/lib/libunpacker_stages_core.so",
+    "build/lib/libunpacker_stages_nalu.so"
   ],
   "pipeline": [
     {
@@ -17,21 +18,19 @@
     },
     {
       "id": "unpack_AD00",
-      "type": "ByteStreamUnpackerStage",
+      "type": "ByteStreamToNaluEventStage",
       "parameters": {
-        "input_product_name": "bytestream_bank_AD%0",
-        "internal_product_name": "bytestream_bank_AD%0",
-        "pipeline_config_file": "config/unpacker_configs/HDSoC/data_bank_efficient.json"
+        "input_byte_stream_product_name": "bytestream_bank_AD%0",
+        "output_product_name": "NaluEvent"
       },
       "next": ["cleanup_bytestream"]
     },
     {
       "id": "unpack_AT00",
-      "type": "ByteStreamUnpackerStage",
+      "type": "ByteStreamToNaluTimeStage",
       "parameters": {
-        "input_product_name": "bytestream_bank_AT%0",
-        "internal_product_name": "bytestream_bank_AT%0",
-        "pipeline_config_file": "config/unpacker_configs/HDSoC/timing_bank_explicit.json"
+        "input_byte_stream_product_name": "bytestream_bank_AT%0",
+        "output_product_name": "NaluTime"
       },
       "next": ["cleanup_bytestream"]
     },
@@ -39,7 +38,7 @@
       "id": "cleanup_bytestream",
       "type": "ClearProductsStage",
       "parameters": {
-        "tags": ["built_by_midas_event_to_bytestream_stage", "byte_stream", "internal"]
+        "tags": ["built_by_midas_event_to_bytestream_stage", "byte_stream"]
       },
       "next": []
     }

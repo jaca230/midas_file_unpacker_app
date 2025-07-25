@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     std::filesystem::path base_dir = std::filesystem::path(__FILE__).parent_path().parent_path();
     std::vector<std::string> config_files = {
         (base_dir / "config/logger.json").string(),
-        (base_dir / "config/main_pipeline.json").string()
+        (base_dir / "config/unpacker_pipelines/HDSoC/default_unpacking_pipeline.json").string()
     };
 
     auto config_manager = std::make_shared<ConfigManager>();
@@ -124,6 +124,7 @@ int main(int argc, char** argv) {
     std::cout << "[Progress] 0.0% (0/" << total_events_to_process << ") | Time: 0.00 s | Rate: 0.00 events/s\n";
 
     while (event_count < total_events_to_process) {
+        ++event_count;
         TMEvent* raw_event = TMReadEvent(reader);
         if (!raw_event) break;
 
@@ -155,7 +156,6 @@ int main(int argc, char** argv) {
         }
 
         tree.Fill();
-        ++event_count;
 
         if (event_count >= next_progress_event || event_count == total_events_to_process) {
             double elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(

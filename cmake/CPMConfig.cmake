@@ -8,15 +8,15 @@
 
 
 set(CPM_PACKAGE_LIST
-  analysis_pipeline_core
-  TBB
-  analysis_pipeline
-  unpacker_data_products_core
-  midas_event_unpacker_plugin
-  byte_stream_unpacker_plugin
-  unpacker_data_products_nalu
-  unpacker_stages_core
-  unpacker_stages_nalu
+  analysis_pipeline_core       # needed for all analysis_pipeline libraries/plugins
+  TBB                          # needed for analysis pipeline
+  analysis_pipeline            # needed for all libraries/plugins that make internal pipelines
+  unpacker_data_products_core  # needed for all unpackers libraries/plugins
+  unpacker_data_products_nalu  # needed for all nalu unpackers libraries/plugins
+  unpacker_stages_core         # needed for all unpacker stages libraries/plugins
+  unpacker_stages_nalu         # no additional libraries/plugins depend on this in this app
+  midas_event_unpacker_plugin  # no additional libraries/plugins depend on this in this app
+  byte_stream_unpacker_plugin  # no additional libraries/plugins depend on this in this app
 )
 
 # ---------------------- analysis_pipeline_core ----------------------
@@ -67,14 +67,6 @@ set(midas_event_unpacker_plugin_OPTIONS
   "USE_BUNDLED_MIDAS ON"
 )
 
-# ---------------------- midas_event_unpacker_plugin ----------------------
-set(byte_stream_unpacker_plugin_REPO   "jaca230/byte_stream_unpacker_plugin")
-set(byte_stream_unpacker_plugin_TAG    "main")
-set(byte_stream_unpacker_plugin_TARGET "analysis_pipeline::byte_stream_unpacker_plugin")
-set(byte_stream_unpacker_plugin_OPTIONS
-  "CMAKE_POSITION_INDEPENDENT_CODE ON"
-)
-
 # ---------------------- unpacker_data_products_nalu ----------------------
 set(unpacker_data_products_nalu_REPO   "jaca230/unpacker_data_products_nalu")
 set(unpacker_data_products_nalu_TAG    "main")
@@ -96,5 +88,13 @@ set(unpacker_stages_nalu_REPO   "jaca230/unpacker_stages_nalu")
 set(unpacker_stages_nalu_TAG    "main")
 set(unpacker_stages_nalu_TARGET "analysis_pipeline::unpacker_stages_nalu")
 set(unpacker_stages_nalu_OPTIONS
+  "CMAKE_POSITION_INDEPENDENT_CODE ON"
+)
+
+# ---------------------- byte_stream_unpacker_plugin ----------------------
+set(byte_stream_unpacker_plugin_REPO   "jaca230/byte_stream_unpacker_plugin")
+set(byte_stream_unpacker_plugin_TAG    "main")
+set(byte_stream_unpacker_plugin_TARGET "analysis_pipeline::byte_stream_unpacker_plugin")
+set(byte_stream_unpacker_plugin_OPTIONS
   "CMAKE_POSITION_INDEPENDENT_CODE ON"
 )
