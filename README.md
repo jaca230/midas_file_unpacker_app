@@ -21,9 +21,9 @@ All dependencies are pulled automatically via [CPM.cmake](https://github.com/cpm
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your/repo.git
-   cd repo/apps/midas_file_unpacker_app
-````
+   git clone https://github.com/jaca230/midas_file_unpacker_app
+   cd midas_file_unpacker_app
+   ```
 
 2. Run the build script:
 
@@ -115,6 +115,21 @@ apps/midas_file_unpacker_app/
 
 ---
 
+## Examples
+
+Several Jupyter notebooks are provided in the `notebooks/` directory to demonstrate
+how to:
+
+* Open and inspect the produced `output.root` file
+* Access unpacked `NaluEvent`, `NaluTime`, and waveform data
+* Perform quick checks and validation on the output
+
+For a starting point, see:
+
+* `notebooks/example.ipynb` — basic usage demonstration
+
+---
+
 ## Notes
 
 * CPM will clone external repositories under `build/_deps/`.
@@ -126,5 +141,3 @@ apps/midas_file_unpacker_app/
 ## License
 
 [MIT License](LICENSE)
-
-```
