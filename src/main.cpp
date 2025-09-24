@@ -95,16 +95,15 @@ int main(int argc, char** argv) {
     TFile output_file("output.root", "RECREATE");
     TTree tree("events", "Nalu unpacked events");
 
-    // Original branches (for completeness, even though they cause PyROOT issues)
+    // Branch pointers
     dataProducts::NaluEvent* event_ptr = nullptr;
     dataProducts::NaluTime* time_ptr = nullptr;
     tree.Branch("event", &event_ptr);
     tree.Branch("times", &time_ptr);
 
-    // DIRECT BRANCHES for your existing collections - these will work in PyROOT!
-    dataProducts::NaluPacketCollection* packets_direct = new dataProducts::NaluPacketCollection();
-    dataProducts::NaluWaveformCollection* waveforms_direct = new dataProducts::NaluWaveformCollection();
-    
+    // Direct collections
+    auto* packets_direct   = new dataProducts::NaluPacketCollection();
+    auto* waveforms_direct = new dataProducts::NaluWaveformCollection();
     tree.Branch("packets", &packets_direct);
     tree.Branch("waveforms", &waveforms_direct);
 
@@ -134,46 +133,48 @@ int main(int argc, char** argv) {
         auto& dpm = pipeline.getDataProductManager();
 
         if (!dpm.hasProduct("NaluEvent") || !dpm.hasProduct("NaluTime")) {
-            std::cerr << "Skipping event " << event_count << ": missing required products\n";
             dpm.clear();
             continue;
         }
 
-        auto event_lock = dpm.checkoutRead("NaluEvent");
-        auto time_lock  = dpm.checkoutRead("NaluTime");
+        // Temporary copies to avoid keeping locks alive
+        dataProducts::NaluEvent*   event_local = nullptr;
+        dataProducts::NaluTime*    time_local  = nullptr;
+        std::vector<dataProducts::NaluPacket>   packet_copy;
+        std::vector<dataProducts::NaluWaveform> waveform_copy;
 
-        event_ptr = dynamic_cast<dataProducts::NaluEvent*>(event_lock.get()->getObject());
-        time_ptr  = dynamic_cast<dataProducts::NaluTime*>(time_lock.get()->getObject());
+        {
+            auto event_lock = dpm.checkoutRead("NaluEvent");
+            auto time_lock  = dpm.checkoutRead("NaluTime");
 
-        if (!event_ptr || !time_ptr) {
-            std::cerr << "Skipping event " << event_count << ": failed to cast product types\n";
+            event_local = dynamic_cast<dataProducts::NaluEvent*>(event_lock.get()->getObject());
+            time_local  = dynamic_cast<dataProducts::NaluTime*>(time_lock.get()->getObject());
+
+            if (event_local && time_local) {
+                packet_copy   = event_local->packets.packets;
+                waveform_copy = event_local->waveforms.waveforms;
+            }
+        } // locks released here
+
+        if (!event_local || !time_local) {
             dpm.clear();
             continue;
         }
 
+        // Set branch pointers for this event
+        event_ptr = event_local;
+        time_ptr  = time_local;
 
-        // ------------------------
-        // Fill direct collection branches
-        // ------------------------
-        
-        // Clear previous event data
+        // Update direct collections
         packets_direct->Clear();
         waveforms_direct->Clear();
-
-        // Copy packet collection using the existing SetPackets method
-        std::vector<dataProducts::NaluPacket> packet_copy = event_ptr->packets.packets;
         packets_direct->SetPackets(std::move(packet_copy));
-
-        // Copy waveform collection using the existing SetWaveforms method
-        std::vector<dataProducts::NaluWaveform> waveform_copy = event_ptr->waveforms.waveforms;
         waveforms_direct->SetWaveforms(std::move(waveform_copy));
 
-        // Fill the tree
+        // Fill tree
         tree.Fill();
 
-        // ------------------------
-        // Progress update
-        // ------------------------
+        // Progress report
         if (event_count >= next_progress_event || event_count == total_events_to_process) {
             double elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - t_start).count();
             double eps = (elapsed > 0) ? static_cast<double>(event_count) / elapsed : 0.0;
@@ -205,8 +206,7 @@ int main(int argc, char** argv) {
     tree.Write();
     output_file.Close();
     delete reader;
-    
-    // Clean up
+
     delete packets_direct;
     delete waveforms_direct;
 
