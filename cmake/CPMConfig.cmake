@@ -9,12 +9,12 @@
 
 set(CPM_PACKAGE_LIST
   analysis_pipeline_core       # needed for all analysis_pipeline libraries/plugins
-  TBB                          # needed for analysis pipeline
+  #TBB                          # needed for analysis pipeline
   analysis_pipeline            # needed for all libraries/plugins that make internal pipelines
   unpacker_data_products_core  # needed for all unpackers libraries/plugins
-  unpacker_data_products_nalu  # needed for all nalu unpackers libraries/plugins
+  unpacker_data_products_sampic  # needed for all sampic unpackers libraries/plugins
   unpacker_stages_core         # needed for all unpacker stages libraries/plugins
-  unpacker_stages_nalu         # no additional libraries/plugins depend on this in this app
+  unpacker_stages_sampic       # no additional libraries/plugins depend on this in this app
   midas_event_unpacker_plugin  # no additional libraries/plugins depend on this in this app
   byte_stream_unpacker_plugin  # no additional libraries/plugins depend on this in this app
 )
@@ -88,6 +88,22 @@ set(unpacker_stages_nalu_REPO   "jaca230/unpacker_stages_nalu")
 set(unpacker_stages_nalu_TAG    "main")
 set(unpacker_stages_nalu_TARGET "analysis_pipeline::unpacker_stages_nalu")
 set(unpacker_stages_nalu_OPTIONS
+  "CMAKE_POSITION_INDEPENDENT_CODE ON"
+)
+
+# ---------------------- unpacker_data_products_sampic ----------------------
+set(unpacker_data_products_sampic_REPO   "jaca230/unpacker_data_products_sampic")
+set(unpacker_data_products_sampic_TAG    "main")
+set(unpacker_data_products_sampic_TARGET "analysis_pipeline::unpacker_data_products_sampic")
+set(unpacker_data_products_sampic_OPTIONS
+  "CMAKE_POSITION_INDEPENDENT_CODE ON"
+)
+
+# ---------------------- unpacker_stages_sampic ----------------------
+set(unpacker_stages_sampic_REPO   "jaca230/unpacker_stages_sampic")
+set(unpacker_stages_sampic_TAG    "main")
+set(unpacker_stages_sampic_TARGET "analysis_pipeline::unpacker_stages_sampic")
+set(unpacker_stages_sampic_OPTIONS
   "CMAKE_POSITION_INDEPENDENT_CODE ON"
 )
 
