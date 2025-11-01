@@ -17,10 +17,7 @@
 #include "analysis_pipeline/config/config_manager.h"
 #include "analysis_pipeline/pipeline/pipeline.h"
 
-#include "analysis_pipeline/unpacker_nalu/data_products/NaluEvent.h"
-#include "analysis_pipeline/unpacker_nalu/data_products/NaluTime.h"
-#include "analysis_pipeline/unpacker_nalu/data_products/NaluPacketCollection.h"
-#include "analysis_pipeline/unpacker_nalu/data_products/NaluWaveformCollection.h"
+#include "analysis_pipeline/unpacker_sampic/data_products/SampicEvent.h"
 
 int main(int argc, char** argv) {
     // ------------------------
@@ -45,7 +42,7 @@ int main(int argc, char** argv) {
     std::filesystem::path base_dir = std::filesystem::path(__FILE__).parent_path().parent_path();
     std::vector<std::string> config_files = {
         (base_dir / "config/logger.json").string(),
-        (base_dir / "config/unpacker_pipelines/HDSoC/default_unpacking_pipeline.json").string()
+        (base_dir / "config/unpacker_pipelines/SAMPIC/default_unpacking_pipeline.json").string()
     };
 
     auto config_manager = std::make_shared<ConfigManager>();
@@ -93,19 +90,11 @@ int main(int argc, char** argv) {
     // Setup ROOT file and TTree
     // ------------------------
     TFile output_file("output.root", "RECREATE");
-    TTree tree("events", "Nalu unpacked events");
+    TTree tree("events", "SAMPIC unpacked events");
 
-    // Branch pointers
-    dataProducts::NaluEvent* event_ptr = nullptr;
-    dataProducts::NaluTime* time_ptr = nullptr;
-    tree.Branch("event", &event_ptr);
-    tree.Branch("times", &time_ptr);
-
-    // Direct collections
-    auto* packets_direct   = new dataProducts::NaluPacketCollection();
-    auto* waveforms_direct = new dataProducts::NaluWaveformCollection();
-    tree.Branch("packets", &packets_direct);
-    tree.Branch("waveforms", &waveforms_direct);
+    // Branch pointer
+    dataProducts::SampicEvent* event_ptr = nullptr;
+    tree.Branch("sampic_event", &event_ptr);
 
     // ------------------------
     // Event loop
@@ -132,44 +121,26 @@ int main(int argc, char** argv) {
 
         auto& dpm = pipeline.getDataProductManager();
 
-        if (!dpm.hasProduct("NaluEvent") || !dpm.hasProduct("NaluTime")) {
+        if (!dpm.hasProduct("SampicEvent")) {
             dpm.clear();
             continue;
         }
 
-        // Temporary copies to avoid keeping locks alive
-        dataProducts::NaluEvent*   event_local = nullptr;
-        dataProducts::NaluTime*    time_local  = nullptr;
-        std::vector<dataProducts::NaluPacket>   packet_copy;
-        std::vector<dataProducts::NaluWaveform> waveform_copy;
+        // Get event data
+        dataProducts::SampicEvent* event_local = nullptr;
 
         {
-            auto event_lock = dpm.checkoutRead("NaluEvent");
-            auto time_lock  = dpm.checkoutRead("NaluTime");
+            auto event_lock = dpm.checkoutRead("SampicEvent");
+            event_local = dynamic_cast<dataProducts::SampicEvent*>(event_lock.get()->getObject());
+        } // lock released here
 
-            event_local = dynamic_cast<dataProducts::NaluEvent*>(event_lock.get()->getObject());
-            time_local  = dynamic_cast<dataProducts::NaluTime*>(time_lock.get()->getObject());
-
-            if (event_local && time_local) {
-                packet_copy   = event_local->packets.packets;
-                waveform_copy = event_local->waveforms.waveforms;
-            }
-        } // locks released here
-
-        if (!event_local || !time_local) {
+        if (!event_local) {
             dpm.clear();
             continue;
         }
 
-        // Set branch pointers for this event
+        // Set branch pointer for this event
         event_ptr = event_local;
-        time_ptr  = time_local;
-
-        // Update direct collections
-        packets_direct->Clear();
-        waveforms_direct->Clear();
-        packets_direct->SetPackets(std::move(packet_copy));
-        waveforms_direct->SetWaveforms(std::move(waveform_copy));
 
         // Fill tree
         tree.Fill();
