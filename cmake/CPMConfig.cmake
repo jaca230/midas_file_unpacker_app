@@ -93,7 +93,7 @@ set(unpacker_stages_nalu_OPTIONS
 
 # ---------------------- unpacker_data_products_sampic ----------------------
 # Use local directory to test cleaned-up code before pushing to GitHub
-set(unpacker_data_products_sampic_SOURCE_DIR "/home/jack/cpp_projects/analysis_pipeline_project/pipeline_plugins/unpacking_plugins/general_unpackers/data_products/unpacker_data_products_sampic")
+# set(unpacker_data_products_sampic_SOURCE_DIR "/home/jack/cpp_projects/analysis_pipeline_project/pipeline_plugins/unpacking_plugins/general_unpackers/data_products/unpacker_data_products_sampic")
 set(unpacker_data_products_sampic_REPO   "jaca230/unpacker_data_products_sampic")
 set(unpacker_data_products_sampic_TAG    "main")
 set(unpacker_data_products_sampic_TARGET "analysis_pipeline::unpacker_data_products_sampic")
@@ -103,7 +103,7 @@ set(unpacker_data_products_sampic_OPTIONS
 
 # ---------------------- unpacker_stages_sampic ----------------------
 # Use local directory to test cleaned-up code before pushing to GitHub
-set(unpacker_stages_sampic_SOURCE_DIR "/home/jack/cpp_projects/analysis_pipeline_project/pipeline_plugins/unpacking_plugins/general_unpackers/stages/unpacker_stages_sampic")
+# set(unpacker_stages_sampic_SOURCE_DIR "/home/jack/cpp_projects/analysis_pipeline_project/pipeline_plugins/unpacking_plugins/general_unpackers/stages/unpacker_stages_sampic")
 set(unpacker_stages_sampic_REPO   "jaca230/unpacker_stages_sampic")
 set(unpacker_stages_sampic_TAG    "main")
 set(unpacker_stages_sampic_TARGET "analysis_pipeline::unpacker_stages_sampic")
