@@ -178,9 +178,6 @@ int main(int argc, char** argv) {
     output_file.Close();
     delete reader;
 
-    delete packets_direct;
-    delete waveforms_direct;
-
     std::cout << "\n----------------------------------------\n";
     std::cout << "           Processing Summary\n";
     std::cout << "----------------------------------------\n";
