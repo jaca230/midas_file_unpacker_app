@@ -64,13 +64,23 @@ foreach(pkg IN LISTS CPM_PACKAGE_LIST)
   endif()
 
   # Add the package
-  CPMAddPackage(
-    NAME ${pkg}
-    GITHUB_REPOSITORY ${${pkg}_REPO}
-    GIT_TAG ${${pkg}_TAG}
-    DOWNLOAD_ONLY ${pkg_DOWNLOAD_ONLY}
-    OPTIONS ${pkg_OPTIONS}
-  )
+  # If SOURCE_DIR is defined, use local directory; otherwise use GitHub repo
+  if(DEFINED ${pkg}_SOURCE_DIR)
+    CPMAddPackage(
+      NAME ${pkg}
+      SOURCE_DIR ${${pkg}_SOURCE_DIR}
+      DOWNLOAD_ONLY ${pkg_DOWNLOAD_ONLY}
+      OPTIONS ${pkg_OPTIONS}
+    )
+  else()
+    CPMAddPackage(
+      NAME ${pkg}
+      GITHUB_REPOSITORY ${${pkg}_REPO}
+      GIT_TAG ${${pkg}_TAG}
+      DOWNLOAD_ONLY ${pkg_DOWNLOAD_ONLY}
+      OPTIONS ${pkg_OPTIONS}
+    )
+  endif()
 
   # Create interface target for header-only packages
   if(${pkg}_DOWNLOAD_ONLY)
