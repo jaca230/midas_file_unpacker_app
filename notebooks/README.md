@@ -33,8 +33,10 @@ Features:
 
 Install required Python packages:
 ```bash
-pip install uproot awkward numpy matplotlib pandas jupyter
+pip install numpy matplotlib jupyter
 ```
+
+**Note**: These notebooks use PyROOT (ROOT's Python bindings) which is included with ROOT. Make sure you have ROOT installed and properly configured in your Python environment.
 
 ### Running the Notebooks
 
@@ -54,21 +56,32 @@ pip install uproot awkward numpy matplotlib pandas jupyter
 ## Quick Example
 
 ```python
-import uproot
+import ROOT
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-# Load data
-file = uproot.open('../output.root')
-tree = file['events']
-events = tree.arrays(['sampic_event.hits.corrected_waveform',
-                      'sampic_event.hits.channel',
-                      'sampic_event.hits.amplitude'],
-                     library='ak', entry_stop=10)
+# Load libraries
+BUILD_LIB_PATH = "../build/lib"
+for lib in ["libanalysis_pipeline_core.so", "libunpacker_data_products_core.so",
+            "libunpacker_data_products_sampic.so"]:
+    ROOT.gSystem.Load(os.path.join(BUILD_LIB_PATH, lib))
 
-# Plot first waveform
-hit = events[0].sampic_event.hits[0]
-plt.plot(hit.corrected_waveform)
+# Open file
+f = ROOT.TFile.Open("../output.root")
+tree = f.Get("events")
+
+# Get first event
+tree.GetEntry(0)
+event = tree.sampic_event
+hit = event.hits[0]
+
+# Convert waveform to numpy
+waveform = np.array([hit.corrected_waveform[i] for i in range(len(hit.corrected_waveform))],
+                    dtype=np.float32)
+
+# Plot
+plt.plot(waveform)
 plt.xlabel('Sample Index')
 plt.ylabel('Amplitude [ADC]')
 plt.title(f'Channel {hit.channel}, Amplitude {hit.amplitude:.2f}')
@@ -92,7 +105,8 @@ The ROOT file contains a TTree called `events` with branches:
 ## Notes
 
 - Notebooks expect `output.root` to be in the parent directory (`../output.root`)
-- Use `uproot` for reading ROOT files (no ROOT installation required)
+- Uses PyROOT for reading ROOT files (requires ROOT installation)
+- Libraries must be loaded before accessing custom data products
 - Waveforms are stored as variable-length vectors (length = data_size field)
 - One event can contain multiple hits from different channels
 
@@ -101,8 +115,11 @@ The ROOT file contains a TTree called `events` with branches:
 **Problem**: `FileNotFoundError: ../output.root`
 - **Solution**: Run the unpacker first to generate the ROOT file
 
-**Problem**: `ModuleNotFoundError: No module named 'uproot'`
-- **Solution**: Install uproot: `pip install uproot awkward`
+**Problem**: `AttributeError` when accessing data
+- **Solution**: Make sure to load all required libraries before opening the ROOT file
+
+**Problem**: `ModuleNotFoundError: No module named 'ROOT'`
+- **Solution**: Make sure ROOT is properly installed and configured in your Python environment. Try `import ROOT` in a Python shell.
 
 **Problem**: Plots don't show up
 - **Solution**: Add `%matplotlib inline` at the top of the notebook
