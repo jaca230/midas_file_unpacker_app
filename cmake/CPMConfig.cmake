@@ -13,8 +13,10 @@ set(CPM_PACKAGE_LIST
   analysis_pipeline            # needed for all libraries/plugins that make internal pipelines
   unpacker_data_products_core  # needed for all unpackers libraries/plugins
   unpacker_data_products_sampic  # needed for all sampic unpackers libraries/plugins
+  unpacker_data_products_nalu    # needed for HDSoC/Nalu unpackers
   unpacker_stages_core         # needed for all unpacker stages libraries/plugins
   unpacker_stages_sampic       # no additional libraries/plugins depend on this in this app
+  unpacker_stages_nalu         # stages for HDSoC/Nalu unpackers
   midas_event_unpacker_plugin  # no additional libraries/plugins depend on this in this app
   byte_stream_unpacker_plugin  # no additional libraries/plugins depend on this in this app
 )
@@ -103,7 +105,7 @@ set(unpacker_data_products_sampic_OPTIONS
 
 # ---------------------- unpacker_stages_sampic ----------------------
 # Use local directory to test cleaned-up code before pushing to GitHub
-# set(unpacker_stages_sampic_SOURCE_DIR "/home/jack/cpp_projects/analysis_pipeline_project/pipeline_plugins/unpacking_plugins/general_unpackers/stages/unpacker_stages_sampic")
+#set(unpacker_stages_sampic_SOURCE_DIR "/home/jack/cpp_projects/analysis_pipeline_project/pipeline_plugins/unpacking_plugins/general_unpackers/stages/unpacker_stages_sampic")
 set(unpacker_stages_sampic_REPO   "jaca230/unpacker_stages_sampic")
 set(unpacker_stages_sampic_TAG    "main")
 set(unpacker_stages_sampic_TARGET "analysis_pipeline::unpacker_stages_sampic")

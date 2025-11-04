@@ -46,35 +46,36 @@ All dependencies are pulled automatically via [CPM.cmake](https://github.com/cpm
 
 ## Running
 
-To run the unpacker on a MIDAS file:
+To run the unpacker on a MIDAS file, use the `run.sh` helper script. By default the
+application unpacks **SAMPIC** data products; pass `--profile HDSoC` to switch to the
+HDSoC/Nalu pipeline.
 
 ```bash
-./scripts/run.sh -- path/to/input.mid.lz4 [max_events]
+# Default SAMPIC pipeline (all events)
+./scripts/run.sh -- path/to/input.mid.lz4
+
+# SAMPIC pipeline with an explicit event limit
+./scripts/run.sh -- path/to/input.mid.lz4 --max-events 1000
+
+# HDSoC / Nalu pipeline
+./scripts/run.sh --profile HDSoC -- path/to/input.mid.lz4
+
+# Show available options
+./build/bin/unpacker --help
 ```
 
-Examples:
-
-```bash
-# Process all events
-./scripts/run.sh -- ./run42115.mid.lz4
-
-# Process only 1000 events
-./scripts/run.sh -- ./run42115.mid.lz4 1000
-```
-
-The output will be written to:
-
-```
-output.root
-```
-
-containing a TTree named `events` with unpacked Nalu data products.
+The output is written to `output.root` and contains a TTree named `events` with either
+SAMPIC or HDSoC data products depending on the selected profile.
 
 ### Run-time Options
 
 * `-d` / `--debug`: Run under `gdb`
 * `-v` / `--valgrind`: Run under `valgrind`
 * `--preload <libs>`: LD\_PRELOAD extra shared libraries (comma-separated)
+* `--profile <name>`: Default pipeline profile (`SAMPIC` or `HDSoC`). You can also pass
+  `--profile` after the `--` separator and it will be forwarded directly to the executable.
+* `--max-events <N>`: Limit the number of events processed. (You can also pass a numeric
+  positional argument for backwards compatibility.)
 
 ---
 
@@ -83,9 +84,12 @@ containing a TTree named `events` with unpacked Nalu data products.
 The application loads configuration files at runtime:
 
 * **Logger config**: `config/logger.json`
-* **Pipeline config**: `config/unpacker_pipelines/HDSoC/default_unpacking_pipeline.json`
+* **Pipeline configs**:
+  * `config/unpacker_pipelines/SAMPIC/default_unpacking_pipeline.json`
+  * `config/unpacker_pipelines/HDSoC/default_unpacking_pipeline.json`
 
-Modify these JSON files to adjust logging, pipeline stages, or plugin paths.
+The executable chooses which pipeline to load at runtime based on `--profile`. Adjust these
+JSON files to change logging, pipeline stages, or plugin paths.
 
 ---
 
@@ -121,7 +125,8 @@ Several Jupyter notebooks are provided in the `notebooks/` directory to demonstr
 how to:
 
 * Open and inspect the produced `output.root` file
-* Access unpacked `NaluEvent`, `NaluTime`, and waveform data
+* Access unpacked SAMPIC (`SampicEvent`, `SampicEventTiming`, `SampicCollectorTiming`) or
+  HDSoC (`NaluEvent`, `NaluTime`) data products and waveform information
 * Perform quick checks and validation on the output
 
 For a starting point, see:

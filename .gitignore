@@ -1,6 +1,7 @@
 # ignore input or output files
 *.root*
 *.mid*
+*.log*
 
 # Ignore compiled files and executables
 *.o

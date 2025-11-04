@@ -14,7 +14,7 @@
         "metadata_product_name": "event_metadata",
         "bank_product_name_prefix": "bytestream_bank_"
       },
-      "next": ["unpack_AD00"]
+      "next": ["unpack_AD00", "unpack_AT00", "unpack_AC00"]
     },
     {
       "id": "unpack_AD00",
@@ -22,6 +22,24 @@
       "parameters": {
         "input_byte_stream_product_name": "bytestream_bank_AD00",
         "output_product_name": "SampicEvent"
+      },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_AT00",
+      "type": "ByteStreamToSampicEventTimingStage",
+      "parameters": {
+        "input_byte_stream_product_name": "bytestream_bank_AT00",
+        "output_product_name": "SampicEventTiming"
+      },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_AC00",
+      "type": "ByteStreamToSampicCollectorTimingStage",
+      "parameters": {
+        "input_byte_stream_product_name": "bytestream_bank_AC00",
+        "output_product_name": "SampicCollectorTiming"
       },
       "next": ["cleanup_bytestream"]
     },
