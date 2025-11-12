@@ -2,6 +2,9 @@
 *.root*
 *.mid*
 *.log*
+/data/
+/output/
+/playground/
 
 # Ignore compiled files and executables
 *.o

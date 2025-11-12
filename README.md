@@ -42,6 +42,9 @@ All dependencies are pulled automatically via [CPM.cmake](https://github.com/cpm
    * `-o` / `--overwrite`: clean build directory before rebuilding
    * `-j <N>`: specify number of build jobs (default: all available cores)
 
+   CPM keeps `FetchContent` connected to the network, so each configure step fetches the
+   latest commits for dependencies that follow a branch (e.g., `main`).
+
 ---
 
 ## Running
@@ -90,6 +93,18 @@ The application loads configuration files at runtime:
 
 The executable chooses which pipeline to load at runtime based on `--profile`. Adjust these
 JSON files to change logging, pipeline stages, or plugin paths.
+
+### Overriding dependencies for local development
+
+CPM lets you point any dependency at a local checkout by setting `CPM_<package>_SOURCE`
+before configuring, e.g.
+
+```bash
+cmake -DCPM_unpacker_stages_sampic_SOURCE=/path/to/local/unpacker_stages_sampic ..
+```
+
+This replaces the remote GitHub clone for that package, which is useful when developing
+multiple repos in tandem.
 
 ---
 

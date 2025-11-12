@@ -16,6 +16,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Always allow FetchContent/CPM to contact remotes so branch-tracking tags update
+set(FETCHCONTENT_UPDATES_DISCONNECTED OFF CACHE BOOL "" FORCE)
+set(FETCHCONTENT_FULLY_DISCONNECTED OFF CACHE BOOL "" FORCE)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -24,6 +28,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # CPM Setup (local CPM.cmake expected)
 # ------------------------------------------------------------------------------
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake)
+
+# Clear CPM's cached package list so every configure run re-adds dependencies
+# This allows branch-tracking tags (e.g., main) to fetch the latest commits.
+set(CPM_PACKAGES "" CACHE INTERNAL "" FORCE)
 
 # ------------------------------------------------------------------------------
 # Load CPM Package Config Variables
@@ -63,24 +71,14 @@ foreach(pkg IN LISTS CPM_PACKAGE_LIST)
     set(pkg_DOWNLOAD_ONLY NO)
   endif()
 
-  # Add the package
-  # If SOURCE_DIR is defined, use local directory; otherwise use GitHub repo
-  if(DEFINED ${pkg}_SOURCE_DIR)
-    CPMAddPackage(
-      NAME ${pkg}
-      SOURCE_DIR ${${pkg}_SOURCE_DIR}
-      DOWNLOAD_ONLY ${pkg_DOWNLOAD_ONLY}
-      OPTIONS ${pkg_OPTIONS}
-    )
-  else()
-    CPMAddPackage(
-      NAME ${pkg}
-      GITHUB_REPOSITORY ${${pkg}_REPO}
-      GIT_TAG ${${pkg}_TAG}
-      DOWNLOAD_ONLY ${pkg_DOWNLOAD_ONLY}
-      OPTIONS ${pkg_OPTIONS}
-    )
-  endif()
+  # Add the package from GitHub (CPM overrides can still redirect via CPM_<pkg>_SOURCE)
+  CPMAddPackage(
+    NAME ${pkg}
+    GITHUB_REPOSITORY ${${pkg}_REPO}
+    GIT_TAG ${${pkg}_TAG}
+    DOWNLOAD_ONLY ${pkg_DOWNLOAD_ONLY}
+    OPTIONS ${pkg_OPTIONS}
+  )
 
   # Create interface target for header-only packages
   if(${pkg}_DOWNLOAD_ONLY)
