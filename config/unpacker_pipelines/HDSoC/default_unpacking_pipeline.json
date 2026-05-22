@@ -20,7 +20,7 @@
       "id": "unpack_AD00",
       "type": "ByteStreamToNaluEventStage",
       "parameters": {
-        "input_byte_stream_product_name": "bytestream_bank_AD%0",
+        "input_byte_stream_product_name": "bytestream_bank_AD00",
         "output_product_name": "NaluEvent"
       },
       "next": ["cleanup_bytestream"]
@@ -29,7 +29,7 @@
       "id": "unpack_AT00",
       "type": "ByteStreamToNaluTimeStage",
       "parameters": {
-        "input_byte_stream_product_name": "bytestream_bank_AT%0",
+        "input_byte_stream_product_name": "bytestream_bank_AT00",
         "output_product_name": "NaluTime"
       },
       "next": ["cleanup_bytestream"]
