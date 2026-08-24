@@ -1,0 +1,17 @@
+name: midas_unpacker_dev
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - root>=6.38
+  - tbb-devel
+  - cmake>=3.23,<4
+  - ninja
+  - make
+  - pkg-config
+  - numpy
+  - pandas
+  - matplotlib
+  - jupyterlab
+  - ipykernel
+  - nbclient

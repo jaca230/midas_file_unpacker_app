@@ -6,13 +6,23 @@ All dependencies are pulled automatically via [CPM.cmake](https://github.com/cpm
 
 ---
 
-## Requirements
+## Development environment
 
-- **CMake** ≥ 3.18
-- **C++17** compiler (GCC, Clang, or MSVC)
-- **ROOT** (must be installed and discoverable via `find_package(ROOT ...)`)
-- **Git** (required for CPM to fetch dependencies)
-- Optional: **Valgrind** or **gdb** (for debugging and memory analysis)
+The repository provides a project-local Micromamba environment containing
+ROOT, TBB, the compiler toolchain, Jupyter, and the Python analysis packages.
+It does not require a system Conda installation:
+
+```bash
+source scripts/setup_env.sh
+```
+
+The first activation creates `.venv/` automatically. To deactivate it:
+
+```bash
+source scripts/deactivate_env.sh
+```
+
+Git is also required because CPM fetches the pipeline libraries and plugins.
 
 ---
 
@@ -28,6 +38,7 @@ All dependencies are pulled automatically via [CPM.cmake](https://github.com/cpm
 2. Run the build script:
 
    ```bash
+   source scripts/setup_env.sh
    ./scripts/build.sh
    ```
 
@@ -40,7 +51,10 @@ All dependencies are pulled automatically via [CPM.cmake](https://github.com/cpm
    Options:
 
    * `-o` / `--overwrite`: clean build directory before rebuilding
-   * `-j <N>`: specify number of build jobs (default: all available cores)
+   * `-j <N>`: specify the number of build jobs (default: 2)
+
+   The default can also be set with the generic
+   `UNPACKER_BUILD_JOBS` environment variable.
 
    CPM keeps `FetchContent` connected to the network, so each configure step fetches the
    latest commits for dependencies that follow a branch (e.g., `main`).
@@ -96,15 +110,16 @@ JSON files to change logging, pipeline stages, or plugin paths.
 
 ### Overriding dependencies for local development
 
-CPM lets you point any dependency at a local checkout by setting `CPM_<package>_SOURCE`
-before configuring, e.g.
+For coordinated SAMPIC plugin development, copy `.env.example` to `.env` and
+set either local checkout:
 
-```bash
-cmake -DCPM_unpacker_stages_sampic_SOURCE=/path/to/local/unpacker_stages_sampic ..
+```dotenv
+UNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE=/path/to/unpacker_data_products_sampic
+UNPACKER_STAGES_SAMPIC_SOURCE=/path/to/unpacker_stages_sampic
 ```
 
-This replaces the remote GitHub clone for that package, which is useful when developing
-multiple repos in tandem.
+The build script forwards these paths to CPM. When unset, the application
+fetches both plugins from GitHub and remains completely standalone.
 
 ---
 
@@ -146,14 +161,17 @@ how to:
 
 For a starting point, see:
 
-* `notebooks/example.ipynb` — basic usage demonstration
+* `notebooks/SAMPIC/quick_waveform_plot.ipynb` — sparse-event-safe waveform overview
+* `notebooks/SAMPIC/timing_analysis.ipynb` — SAMPIC and collector timing
+* `notebooks/SAMPIC/external_trigger_diagnostics.ipynb` — TG bank continuity,
+  cadence, hit assignment, and timestamp residuals
 
 ---
 
 ## Notes
 
 * CPM will clone external repositories under `build/_deps/`.
-* ROOT must be installed separately and discoverable by CMake (`source thisroot.sh`).
+* ROOT and TBB are supplied by the local development environment.
 * MIDAS file I/O is bundled with the `midas_event_unpacker_plugin` (no external MIDAS dependency required).
 
 ---

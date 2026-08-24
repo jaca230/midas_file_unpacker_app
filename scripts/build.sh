@@ -1,14 +1,24 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Resolve absolute paths
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 BASE_DIR=$(realpath "$SCRIPT_DIR/..")
 BUILD_DIR="$BASE_DIR/build"
 CLEANUP_SCRIPT="$SCRIPT_DIR/cleanup.sh"
 
-# Default flags
+if [ -f "$BASE_DIR/.env" ]; then
+    set -a
+    # shellcheck disable=SC1091
+    source "$BASE_DIR/.env"
+    set +a
+fi
+
+# ROOT dictionary generation is memory-heavy. Two concurrent jobs is a safer
+# default for development machines; callers can still override it with -j.
 OVERWRITE=false
-JOBS_ARG="-j"  # Use all processors
+BUILD_JOBS="${UNPACKER_BUILD_JOBS:-2}"
 
 # Help message
 show_help() {
@@ -16,7 +26,7 @@ show_help() {
     echo
     echo "Options:"
     echo "  -o, --overwrite           Remove existing build directory before building"
-    echo "  -j, --jobs <number>       Specify number of processors to use (default: all available)"
+    echo "  -j, --jobs <number>       Specify parallel jobs (default: $BUILD_JOBS)"
     echo "  -h, --help                Display this help message"
 }
 
@@ -28,13 +38,12 @@ while [[ "$#" -gt 0 ]]; do
             shift
             ;;
         -j|--jobs)
-            if [[ -n "$2" && "$2" != -* ]]; then
-                JOBS_ARG="-j$2"
-                shift 2
-            else
-                JOBS_ARG="-j"
-                shift
+            if [[ ! "${2:-}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "[build.sh, ERROR] --jobs requires a positive integer"
+                exit 2
             fi
+            BUILD_JOBS="$2"
+            shift 2
             ;;
         -h|--help)
             show_help
@@ -56,14 +65,33 @@ fi
 
 # Create and enter build directory
 mkdir -p "$BUILD_DIR"
-cd "$BUILD_DIR" || exit 1
 
-# Run CMake and Make
+# Run CMake and the selected generator's build command.
 echo "[build.sh] Running cmake in: $BUILD_DIR"
-cmake "$BASE_DIR"
+CMAKE_TOOLCHAIN_ARGS=()
+if command -v root-config >/dev/null 2>&1; then
+    ROOT_CXX="$(root-config --cxx)"
+    if command -v "$ROOT_CXX" >/dev/null 2>&1; then
+        CMAKE_TOOLCHAIN_ARGS+=(
+            "-DCMAKE_CXX_COMPILER=$(command -v "$ROOT_CXX")"
+        )
+        echo "[build.sh] Using ROOT toolchain: $ROOT_CXX"
+    fi
+fi
+if [ -n "${UNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE:-}" ]; then
+    CMAKE_TOOLCHAIN_ARGS+=(
+        "-DUNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE=$UNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE"
+    )
+fi
+if [ -n "${UNPACKER_STAGES_SAMPIC_SOURCE:-}" ]; then
+    CMAKE_TOOLCHAIN_ARGS+=(
+        "-DUNPACKER_STAGES_SAMPIC_SOURCE=$UNPACKER_STAGES_SAMPIC_SOURCE"
+    )
+fi
+cmake -S "$BASE_DIR" -B "$BUILD_DIR" "${CMAKE_TOOLCHAIN_ARGS[@]}"
 
-echo "[build.sh] Building with make $JOBS_ARG"
-make $JOBS_ARG
+echo "[build.sh] Building with $BUILD_JOBS parallel jobs"
+cmake --build "$BUILD_DIR" --parallel "$BUILD_JOBS"
 
 echo "[build.sh] Build complete."
 echo "[build.sh] Executables are in: $BUILD_DIR/bin/"

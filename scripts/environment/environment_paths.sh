@@ -1,0 +1,15 @@
+#!/bin/bash
+
+UNPACKER_ENV_SCRIPT_DIRECTORY="$(
+    cd -P "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd
+)"
+UNPACKER_PROJECT_ROOT="$(
+    cd "$UNPACKER_ENV_SCRIPT_DIRECTORY/../.." >/dev/null 2>&1 && pwd
+)"
+
+export UNPACKER_PROJECT_ROOT
+export UNPACKER_ENV_NAME="midas_unpacker_dev"
+export UNPACKER_MAMBA_ROOT_PREFIX="$UNPACKER_PROJECT_ROOT/.venv"
+export UNPACKER_ENV_PREFIX="$UNPACKER_MAMBA_ROOT_PREFIX/envs/$UNPACKER_ENV_NAME"
+export UNPACKER_MICROMAMBA="$UNPACKER_PROJECT_ROOT/.tools/micromamba"
+export UNPACKER_ENV_FILE="$UNPACKER_PROJECT_ROOT/environment.yml"

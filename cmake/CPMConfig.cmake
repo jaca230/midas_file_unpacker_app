@@ -9,7 +9,6 @@
 
 set(CPM_PACKAGE_LIST
   analysis_pipeline_core       # needed for all analysis_pipeline libraries/plugins
-  TBB                          # needed for analysis pipeline
   analysis_pipeline            # needed for all libraries/plugins that make internal pipelines
   unpacker_data_products_core  # needed for all unpackers libraries/plugins
   unpacker_data_products_sampic  # needed for all sampic unpackers libraries/plugins
@@ -32,15 +31,6 @@ set(analysis_pipeline_core_TARGETS
 set(analysis_pipeline_core_OPTIONS
   "CMAKE_POSITION_INDEPENDENT_CODE ON"
 )
-
-# ---------------------- oneTBB ----------------------
-set(TBB_REPO   "oneapi-src/oneTBB")
-set(TBB_TAG    "v2021.12.0")  # Or latest stable
-set(TBB_TARGET "") # Public Dependecy of Analysis Pipeline, no need to link
-set(TBB_OPTIONS
-  "TBB_TEST OFF;TBB_STRICT OFF;TBB_EXAMPLES OFF;CMAKE_POSITION_INDEPENDENT_CODE ON"
-)
-
 
 # ---------------------- analysis_pipeline ----------------------
 set(analysis_pipeline_REPO   "jaca230/analysis_pipeline")
