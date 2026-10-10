@@ -155,8 +155,9 @@ Several Jupyter notebooks are provided in the `notebooks/` directory to demonstr
 how to:
 
 * Open and inspect the produced `output.root` file
-* Access unpacked SAMPIC (`SampicEvent`, `SampicEventTiming`, `SampicCollectorTiming`) or
-  HDSoC (`NaluEvent`, `NaluTime`) data products and waveform information
+* Access unpacked SAMPIC (`SampicEvent`, `SampicHitMetadata`, `SampicEventTiming`,
+  `SampicCollectorTiming`, `SampicTriggerGroup`, `SampicTriggerRecords`) or HDSoC
+  (`NaluEvent`, `NaluTime`) data products and waveform information
 * Perform quick checks and validation on the output
 
 For a starting point, see:

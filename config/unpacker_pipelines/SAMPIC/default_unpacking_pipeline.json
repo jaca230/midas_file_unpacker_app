@@ -14,50 +14,91 @@
         "metadata_product_name": "event_metadata",
         "bank_product_name_prefix": "bytestream_bank_"
       },
-      "next": ["unpack_AD00", "unpack_AT00", "unpack_AC00", "unpack_TG00"]
+      "next": [
+        "unpack_SD00", "unpack_SD01",
+        "unpack_SH00", "unpack_SH01",
+        "unpack_ST00", "unpack_ST01",
+        "unpack_SC00", "unpack_SC01",
+        "unpack_SG00", "unpack_SG01",
+        "unpack_SV00", "unpack_SV01"
+      ]
     },
     {
-      "id": "unpack_AD00",
+      "id": "unpack_SD00",
       "type": "ByteStreamToSampicEventStage",
-      "parameters": {
-        "input_byte_stream_product_name": "bytestream_bank_AD00",
-        "output_product_name": "SampicEvent"
-      },
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SD00", "output_product_name": "SampicEvent" },
       "next": ["cleanup_bytestream"]
     },
     {
-      "id": "unpack_AT00",
+      "id": "unpack_SD01",
+      "type": "ByteStreamToSampicEventStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SD01", "output_product_name": "SampicEvent" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SH00",
+      "type": "ByteStreamToSampicHitMetadataStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SH00", "output_product_name": "SampicHitMetadata" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SH01",
+      "type": "ByteStreamToSampicHitMetadataStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SH01", "output_product_name": "SampicHitMetadata" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_ST00",
       "type": "ByteStreamToSampicEventTimingStage",
-      "parameters": {
-        "input_byte_stream_product_name": "bytestream_bank_AT00",
-        "output_product_name": "SampicEventTiming"
-      },
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_ST00", "output_product_name": "SampicEventTiming" },
       "next": ["cleanup_bytestream"]
     },
     {
-      "id": "unpack_AC00",
+      "id": "unpack_ST01",
+      "type": "ByteStreamToSampicEventTimingStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_ST01", "output_product_name": "SampicEventTiming" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SC00",
       "type": "ByteStreamToSampicCollectorTimingStage",
-      "parameters": {
-        "input_byte_stream_product_name": "bytestream_bank_AC00",
-        "output_product_name": "SampicCollectorTiming"
-      },
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SC00", "output_product_name": "SampicCollectorTiming" },
       "next": ["cleanup_bytestream"]
     },
     {
-      "id": "unpack_TG00",
-      "type": "ByteStreamToSampicTriggerMetadataStage",
-      "parameters": {
-        "input_byte_stream_product_name": "bytestream_bank_TG00",
-        "output_product_name": "SampicTriggerMetadata"
-      },
+      "id": "unpack_SC01",
+      "type": "ByteStreamToSampicCollectorTimingStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SC01", "output_product_name": "SampicCollectorTiming" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SG00",
+      "type": "ByteStreamToSampicTriggerGroupStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SG00", "output_product_name": "SampicTriggerGroup" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SG01",
+      "type": "ByteStreamToSampicTriggerGroupStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SG01", "output_product_name": "SampicTriggerGroup" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SV00",
+      "type": "ByteStreamToSampicTriggerRecordsStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SV00", "output_product_name": "SampicTriggerRecords" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SV01",
+      "type": "ByteStreamToSampicTriggerRecordsStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SV01", "output_product_name": "SampicTriggerRecords" },
       "next": ["cleanup_bytestream"]
     },
     {
       "id": "cleanup_bytestream",
       "type": "ClearProductsStage",
-      "parameters": {
-        "tags": ["built_by_midas_event_to_bytestream_stage", "byte_stream"]
-      },
+      "parameters": { "tags": ["built_by_midas_event_to_bytestream_stage", "byte_stream"] },
       "next": []
     }
   ]

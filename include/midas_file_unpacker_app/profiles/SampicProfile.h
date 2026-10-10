@@ -15,7 +15,9 @@ namespace dataProducts {
 class SampicCollectorTiming;
 class SampicEvent;
 class SampicEventTiming;
-class SampicTriggerMetadata;
+class SampicHitMetadata;
+class SampicTriggerGroup;
+class SampicTriggerRecords;
 }
 
 namespace midas_file_unpacker_app {
@@ -42,16 +44,23 @@ private:
     PipelineDataProductReadLock event_lock_;
     PipelineDataProductReadLock event_timing_lock_;
     PipelineDataProductReadLock collector_lock_;
-    PipelineDataProductReadLock trigger_metadata_lock_;
+    PipelineDataProductReadLock hit_metadata_lock_;
+    PipelineDataProductReadLock trigger_group_lock_;
+    PipelineDataProductReadLock trigger_records_lock_;
 
     dataProducts::SampicEvent* event_ptr_ = nullptr;
     dataProducts::SampicEventTiming* event_timing_ptr_ = nullptr;
     dataProducts::SampicCollectorTiming* collector_timing_ptr_ = nullptr;
-    dataProducts::SampicTriggerMetadata* trigger_metadata_ptr_ = nullptr;
+    dataProducts::SampicHitMetadata* hit_metadata_ptr_ = nullptr;
+    dataProducts::SampicTriggerGroup* trigger_group_ptr_ = nullptr;
+    dataProducts::SampicTriggerRecords* trigger_records_ptr_ = nullptr;
+
     bool has_event_flag_ = false;
     bool has_event_timing_flag_ = false;
     bool has_collector_flag_ = false;
-    bool has_trigger_metadata_flag_ = false;
+    bool has_hit_metadata_flag_ = false;
+    bool has_trigger_group_flag_ = false;
+    bool has_trigger_records_flag_ = false;
 };
 
 } // namespace midas_file_unpacker_app
