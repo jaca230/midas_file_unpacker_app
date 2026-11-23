@@ -5,6 +5,7 @@
 /data/
 /output/
 /playground/
+/notebooks/playground/
 
 # Ignore compiled files and executables
 *.o
@@ -192,3 +193,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# AI stuff
+.artifacts/
+.context/

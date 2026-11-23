@@ -169,6 +169,32 @@ For a starting point, see:
 
 ---
 
+## Streaming HDSoC heatmaps
+
+Generate the sample-index versus ADC heatmaps from
+`notebooks/HDSoC/windows_check.ipynb` without collecting all samples in memory:
+
+```bash
+python notebooks/playground/plot_hdsoc_heatmap.py output.root
+python notebooks/playground/plot_hdsoc_heatmap.py data/run*.root --channels 0 2 4 --output output/heatmap.png
+```
+
+Channels default to `0 2`; the output defaults to `hdsoc_heatmap.png`.
+Run in the development environment with ROOT, NumPy, and Matplotlib installed,
+using the application's built libraries in `build/lib` (override with
+`--lib-dir`). The script works without a display.
+
+Two streaming passes find per-channel ranges and accumulate 200×200 histograms,
+matching the notebook's automatic bin ranges and 32-sample window markers.
+Memory holds fixed-size histograms plus the current ROOT event, read buffers,
+and temporary arrays for one waveform; it does not grow with the total number
+of events. Split ROOT trees read only waveform branches. Multiple input files
+are combined into one heatmap per selected channel and must remain unchanged
+between passes. Use `--bins 200 200` to change resolution or `--max-events 1000`
+for a quick check (the limit is across all files, applied on both passes).
+
+---
+
 ## Notes
 
 * CPM will clone external repositories under `build/_deps/`.
@@ -180,3 +206,43 @@ For a starting point, see:
 ## License
 
 [MIT License](LICENSE)
+
+
+## Current DAQ bank formats (November 2026)
+
+The SAMPIC profile expects compact output (`verbose_banks=false`): SD `SDC1`
+version 1 (154 bytes/hit), SH version 2 (32 bytes/hit), and the existing ST/SC/SG/SV
+banks. It also decodes SR periodic-readout and SB fixed-time-bin banks, for frontend
+suffixes `00` and `01`. ROOT adds `sampic_readout_tick`, `sampic_time_bin`, and their
+`has_*` presence flags; metadata-only and zero-hit events are retained.
+
+`encoded_waveform` stores the valid signed 16-bit wire samples. `corrected_waveform`
+converts them to volts when ADC correction is enabled (divide by 10000), or ADC
+counts otherwise. Correction and clipping/nonfinite flags are preserved. Fields
+removed from compact SD/SH are no longer exposed as misleading zero values.
+Historical SD and SH formats are not decoded.
+
+The HDSoC `HD`/`HT` layouts remain 36-byte event header + 80-byte packets + 2-byte
+footer, and 64-byte timing data. Both trigger-time and periodic/time-batch modes
+use the same layout. Waveforms are grouped by `(channel, trigger_time)` within
+each MIDAS event, including batches containing multiple triggers.
+
+Build with the matching local SAMPIC data-product and stage checkouts using the
+`UNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE` and `UNPACKER_STAGES_SAMPIC_SOURCE` overrides
+above. Then, in an environment with PyROOT and the `lz4` executable:
+
+```bash
+python tests/verify_current_banks.py
+python tests/check_bank_edge_cases.py
+```
+
+The first command unpacks and compares every event, hit, packet, waveform sample,
+and timing field in runs 121479, 121485, 00266, and 00267. The second checks
+synthetic boundary cases and rejection of malformed banks. Outputs and logs go
+to `.artifacts/bank_format_verification/`, with one ROOT file per real run.
+The original input files and the app's usual `output.root` are not overwritten.
+
+
+Notebook setup, current-schema units, and the execution matrix are documented in
+[notebooks/README.md](notebooks/README.md). Run `python tests/execute_notebooks.py`
+to execute all maintained notebooks on both verified acquisition modes.

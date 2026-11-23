@@ -20,7 +20,9 @@
         "unpack_ST00", "unpack_ST01",
         "unpack_SC00", "unpack_SC01",
         "unpack_SG00", "unpack_SG01",
-        "unpack_SV00", "unpack_SV01"
+        "unpack_SV00", "unpack_SV01",
+        "unpack_SR00", "unpack_SR01",
+        "unpack_SB00", "unpack_SB01"
       ]
     },
     {
@@ -93,6 +95,30 @@
       "id": "unpack_SV01",
       "type": "ByteStreamToSampicTriggerRecordsStage",
       "parameters": { "input_byte_stream_product_name": "bytestream_bank_SV01", "output_product_name": "SampicTriggerRecords" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SR00",
+      "type": "ByteStreamToSampicReadoutTickStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SR00", "output_product_name": "SampicReadoutTick" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SR01",
+      "type": "ByteStreamToSampicReadoutTickStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SR01", "output_product_name": "SampicReadoutTick" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SB00",
+      "type": "ByteStreamToSampicTimeBinStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SB00", "output_product_name": "SampicTimeBin" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_SB01",
+      "type": "ByteStreamToSampicTimeBinStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_SB01", "output_product_name": "SampicTimeBin" },
       "next": ["cleanup_bytestream"]
     },
     {
