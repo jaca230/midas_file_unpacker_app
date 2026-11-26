@@ -22,7 +22,8 @@
         "unpack_SG00", "unpack_SG01",
         "unpack_SV00", "unpack_SV01",
         "unpack_SR00", "unpack_SR01",
-        "unpack_SB00", "unpack_SB01"
+        "unpack_SB00", "unpack_SB01",
+        "unpack_BD00", "unpack_builder_diagnostics"
       ]
     },
     {
@@ -119,6 +120,18 @@
       "id": "unpack_SB01",
       "type": "ByteStreamToSampicTimeBinStage",
       "parameters": { "input_byte_stream_product_name": "bytestream_bank_SB01", "output_product_name": "SampicTimeBin" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_BD00",
+      "type": "ByteStreamToSampicBuilderEventStage",
+      "parameters": { "input_byte_stream_product_name": "bytestream_bank_BD00", "output_product_name": "SampicBuilderEvent" },
+      "next": ["cleanup_bytestream"]
+    },
+    {
+      "id": "unpack_builder_diagnostics",
+      "type": "ByteStreamsToSampicBuilderDiagnosticsStage",
+      "parameters": { "bank_names": ["BT00", "BT01", "BC00", "BS00"] },
       "next": ["cleanup_bytestream"]
     },
     {

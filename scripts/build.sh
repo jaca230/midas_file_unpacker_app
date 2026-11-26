@@ -88,6 +88,12 @@ if [ -n "${UNPACKER_STAGES_SAMPIC_SOURCE:-}" ]; then
         "-DUNPACKER_STAGES_SAMPIC_SOURCE=$UNPACKER_STAGES_SAMPIC_SOURCE"
     )
 fi
+for plugin in DATA_PRODUCTS STAGES; do
+    source_var="UNPACKER_${plugin}_NALU_SOURCE"
+    if [[ -n "${!source_var:-}" ]]; then
+        CMAKE_TOOLCHAIN_ARGS+=("-D${source_var}=${!source_var}")
+    fi
+done
 cmake -S "$BASE_DIR" -B "$BUILD_DIR" "${CMAKE_TOOLCHAIN_ARGS[@]}"
 
 echo "[build.sh] Building with $BUILD_JOBS parallel jobs"

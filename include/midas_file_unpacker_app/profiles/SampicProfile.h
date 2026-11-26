@@ -12,6 +12,8 @@
 class PipelineDataProductManager;
 
 namespace dataProducts {
+class SampicBuilderEvent;
+class SampicBuilderDiagnostics;
 class SampicCollectorTiming;
 class SampicEvent;
 class SampicEventTiming;
@@ -43,6 +45,10 @@ private:
     std::string display_name_;
     std::filesystem::path config_relative_path_;
 
+    PipelineDataProductReadLock builder_event_lock_, builder_diagnostics_lock_;
+    dataProducts::SampicBuilderEvent* builder_event_ptr_ = nullptr;
+    dataProducts::SampicBuilderDiagnostics* builder_diagnostics_ptr_ = nullptr;
+    bool has_builder_event_flag_ = false, has_builder_diagnostics_flag_ = false;
     PipelineDataProductReadLock readout_tick_lock_;
     PipelineDataProductReadLock time_bin_lock_;
     PipelineDataProductReadLock event_lock_;
