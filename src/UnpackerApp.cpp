@@ -81,7 +81,8 @@ int UnpackerApp::run(const CLIOptions& options) const {
     }
 
     std::size_t total_events_in_file = 0;
-    while (TMReadEvent(count_reader.get()) != nullptr) {
+    while (auto* raw = TMReadEvent(count_reader.get())) {
+        std::unique_ptr<TMEvent> counted_event(raw);
         ++total_events_in_file;
     }
     count_reader.reset();
@@ -122,6 +123,10 @@ int UnpackerApp::run(const CLIOptions& options) const {
         }
 
         std::shared_ptr<TMEvent> wrapped_event(raw_event);
+        // MIDAS BOR/EOR/message records contain ODB/text, not detector banks.
+        if (raw_event->event_id >= 0x8000) {
+            continue;
+        }
 
         InputBundle input;
         input.set("TMEvent", wrapped_event);

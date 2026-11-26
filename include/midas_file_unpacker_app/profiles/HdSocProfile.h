@@ -14,6 +14,9 @@ class PipelineDataProductManager;
 namespace dataProducts {
 class NaluEvent;
 class NaluTime;
+class NaluBuilderEvent;
+class NaluCollectionTiming;
+class NaluSelectionSummary;
 }
 
 namespace midas_file_unpacker_app {
@@ -38,10 +41,21 @@ private:
     std::filesystem::path config_relative_path_;
 
     PipelineDataProductReadLock event_lock_;
-    PipelineDataProductReadLock time_lock_;
-
     dataProducts::NaluEvent* event_ptr_ = nullptr;
+    bool has_event_ = false;
+    PipelineDataProductReadLock time_lock_;
     dataProducts::NaluTime* time_ptr_ = nullptr;
+    bool has_time_ = false;
+    PipelineDataProductReadLock builder_event_lock_;
+    dataProducts::NaluBuilderEvent* builder_event_ptr_ = nullptr;
+    bool has_builder_event_ = false;
+    PipelineDataProductReadLock collection_timing_lock_;
+    dataProducts::NaluCollectionTiming* collection_timing_ptr_ = nullptr;
+    bool has_collection_timing_ = false;
+    PipelineDataProductReadLock selection_summary_lock_;
+    dataProducts::NaluSelectionSummary* selection_summary_ptr_ = nullptr;
+    bool has_selection_summary_ = false;
+
 };
 
 } // namespace midas_file_unpacker_app

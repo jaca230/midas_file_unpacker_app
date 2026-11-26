@@ -38,6 +38,35 @@ set(CPM_PACKAGES "" CACHE INTERNAL "" FORCE)
 # ------------------------------------------------------------------------------
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPMConfig.cmake)
 
+# Optional local plugin checkouts for coordinated development. These are
+# ordinary cache paths, so the app remains standalone when they are unset.
+set(UNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE "" CACHE PATH
+    "Local unpacker_data_products_sampic checkout")
+set(UNPACKER_STAGES_SAMPIC_SOURCE "" CACHE PATH
+    "Local unpacker_stages_sampic checkout")
+if(UNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE)
+  set(CPM_unpacker_data_products_sampic_SOURCE
+      "${UNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE}")
+endif()
+if(UNPACKER_STAGES_SAMPIC_SOURCE)
+  set(CPM_unpacker_stages_sampic_SOURCE
+      "${UNPACKER_STAGES_SAMPIC_SOURCE}")
+endif()
+
+# Optional coordinated HDSoC plugin development checkouts.
+set(UNPACKER_DATA_PRODUCTS_NALU_SOURCE "" CACHE PATH "Local unpacker_data_products_nalu checkout")
+set(UNPACKER_STAGES_NALU_SOURCE "" CACHE PATH "Local unpacker_stages_nalu checkout")
+if(UNPACKER_DATA_PRODUCTS_NALU_SOURCE)
+  set(CPM_unpacker_data_products_nalu_SOURCE "${UNPACKER_DATA_PRODUCTS_NALU_SOURCE}")
+endif()
+if(UNPACKER_STAGES_NALU_SOURCE)
+  set(CPM_unpacker_stages_nalu_SOURCE "${UNPACKER_STAGES_NALU_SOURCE}")
+endif()
+
+# TBB is part of the project development environment. Resolve it before the
+# CPM packages because analysis_pipeline consumes the TBB::tbb target.
+find_package(TBB CONFIG REQUIRED COMPONENTS tbb)
+
 # -------------------------------------------------------------------------
 # Automatically add INTERFACE target for header-only packages
 # -------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 /data/
 /output/
 /playground/
+/notebooks/playground/
 
 # Ignore compiled files and executables
 *.o
@@ -162,6 +163,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+.tools/
 env/
 venv/
 ENV/
@@ -191,3 +193,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# AI stuff
+.artifacts/
+.context/

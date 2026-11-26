@@ -12,9 +12,16 @@
 class PipelineDataProductManager;
 
 namespace dataProducts {
+class SampicBuilderEvent;
+class SampicBuilderDiagnostics;
 class SampicCollectorTiming;
 class SampicEvent;
 class SampicEventTiming;
+class SampicHitMetadata;
+class SampicTriggerGroup;
+class SampicTriggerRecords;
+class SampicTimeBin;
+class SampicReadoutTick;
 }
 
 namespace midas_file_unpacker_app {
@@ -38,14 +45,36 @@ private:
     std::string display_name_;
     std::filesystem::path config_relative_path_;
 
+    PipelineDataProductReadLock builder_event_lock_, builder_diagnostics_lock_;
+    dataProducts::SampicBuilderEvent* builder_event_ptr_ = nullptr;
+    dataProducts::SampicBuilderDiagnostics* builder_diagnostics_ptr_ = nullptr;
+    bool has_builder_event_flag_ = false, has_builder_diagnostics_flag_ = false;
+    PipelineDataProductReadLock readout_tick_lock_;
+    PipelineDataProductReadLock time_bin_lock_;
     PipelineDataProductReadLock event_lock_;
     PipelineDataProductReadLock event_timing_lock_;
     PipelineDataProductReadLock collector_lock_;
+    PipelineDataProductReadLock hit_metadata_lock_;
+    PipelineDataProductReadLock trigger_group_lock_;
+    PipelineDataProductReadLock trigger_records_lock_;
 
+    dataProducts::SampicReadoutTick* readout_tick_ptr_ = nullptr;
+    dataProducts::SampicTimeBin* time_bin_ptr_ = nullptr;
     dataProducts::SampicEvent* event_ptr_ = nullptr;
     dataProducts::SampicEventTiming* event_timing_ptr_ = nullptr;
     dataProducts::SampicCollectorTiming* collector_timing_ptr_ = nullptr;
+    dataProducts::SampicHitMetadata* hit_metadata_ptr_ = nullptr;
+    dataProducts::SampicTriggerGroup* trigger_group_ptr_ = nullptr;
+    dataProducts::SampicTriggerRecords* trigger_records_ptr_ = nullptr;
+
+    bool has_readout_tick_flag_ = false;
+    bool has_time_bin_flag_ = false;
+    bool has_event_flag_ = false;
+    bool has_event_timing_flag_ = false;
     bool has_collector_flag_ = false;
+    bool has_hit_metadata_flag_ = false;
+    bool has_trigger_group_flag_ = false;
+    bool has_trigger_records_flag_ = false;
 };
 
 } // namespace midas_file_unpacker_app
