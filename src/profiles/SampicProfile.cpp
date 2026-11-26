@@ -4,6 +4,8 @@
 // to keep a single class per file for easier future maintenance.
 
 #include <TTree.h>
+#include "analysis_pipeline/unpacker_sampic/data_products/SampicBuilderEvent.h"
+#include "analysis_pipeline/unpacker_sampic/data_products/SampicBuilderDiagnostics.h"
 
 #include "analysis_pipeline/core/data/pipeline_data_product_manager.h"
 #include "analysis_pipeline/unpacker_sampic/data_products/SampicCollectorTiming.h"
@@ -30,6 +32,10 @@ std::filesystem::path SampicProfile::configRelativePath() const { return config_
 PipelineMode SampicProfile::mode() const { return PipelineMode::Sampic; }
 
 void SampicProfile::setupTree(TTree& tree) {
+    tree.Branch("sampic_builder_event", &builder_event_ptr_);
+    tree.Branch("has_sampic_builder_event", &has_builder_event_flag_, "has_sampic_builder_event/O");
+    tree.Branch("sampic_builder_diagnostics", &builder_diagnostics_ptr_);
+    tree.Branch("has_sampic_builder_diagnostics", &has_builder_diagnostics_flag_, "has_sampic_builder_diagnostics/O");
     tree.Branch("sampic_time_bin", &time_bin_ptr_);
     tree.Branch("has_sampic_time_bin", &has_time_bin_flag_, "has_sampic_time_bin/O");
     tree.Branch("sampic_readout_tick", &readout_tick_ptr_);
@@ -55,6 +61,16 @@ void SampicProfile::setupTree(TTree& tree) {
 
 bool SampicProfile::extractEvent(PipelineDataProductManager& dpm) {
     resetEventState();
+    if (dpm.hasProduct("SampicBuilderEvent")) {
+        builder_event_lock_ = dpm.checkoutRead("SampicBuilderEvent");
+        if (builder_event_lock_.get()) builder_event_ptr_ = dynamic_cast<dataProducts::SampicBuilderEvent*>(builder_event_lock_.get()->getObject());
+    }
+    if (dpm.hasProduct("SampicBuilderDiagnostics")) {
+        builder_diagnostics_lock_ = dpm.checkoutRead("SampicBuilderDiagnostics");
+        if (builder_diagnostics_lock_.get()) builder_diagnostics_ptr_ = dynamic_cast<dataProducts::SampicBuilderDiagnostics*>(builder_diagnostics_lock_.get()->getObject());
+    }
+    has_builder_event_flag_ = builder_event_ptr_ != nullptr;
+    has_builder_diagnostics_flag_ = builder_diagnostics_ptr_ != nullptr;
 
     if (dpm.hasProduct("SampicEvent")) {
         event_lock_ = dpm.checkoutRead("SampicEvent");
@@ -127,12 +143,16 @@ bool SampicProfile::extractEvent(PipelineDataProductManager& dpm) {
     has_trigger_group_flag_ = (trigger_group_ptr_ != nullptr);
     has_trigger_records_flag_ = (trigger_records_ptr_ != nullptr);
 
-    return has_time_bin_flag_ || has_readout_tick_flag_ || has_event_flag_ || has_event_timing_flag_ || has_collector_flag_ ||
+    return has_builder_event_flag_ || has_builder_diagnostics_flag_ || has_time_bin_flag_ || has_readout_tick_flag_ || has_event_flag_ || has_event_timing_flag_ || has_collector_flag_ ||
            has_hit_metadata_flag_ || has_trigger_group_flag_ ||
            has_trigger_records_flag_;
 }
 
 void SampicProfile::resetEventState() {
+    builder_event_lock_ = PipelineDataProductReadLock();
+    builder_diagnostics_lock_ = PipelineDataProductReadLock();
+    builder_event_ptr_ = nullptr; builder_diagnostics_ptr_ = nullptr;
+    has_builder_event_flag_ = false; has_builder_diagnostics_flag_ = false;
     time_bin_lock_ = PipelineDataProductReadLock();
     time_bin_ptr_ = nullptr;
     has_time_bin_flag_ = false;

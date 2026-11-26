@@ -60,3 +60,35 @@ files. Executed notebooks, figures, and results go under
 `.artifacts/notebook_verification/`; source notebooks have cleared outputs.
 Jupyter's hidden `.ipynb_checkpoints` are autosaves, excluded from maintenance and
 the test matrix.
+
+## Event-builder recording
+
+`SAMPIC/event_builder_qa.ipynb` uses the separate BD/BT/BC/BS ROOT branches. It runs
+on `.artifacts/builder_qa/output.root` and the recording manifest selected in its
+first code cell, rather than the legacy frontend fixtures above. It reads BD v4 corrected SD/SH records, plots ADC-corrected waveforms in mV,
+checks double timestamp precision, and separates source microseconds from builder
+nanoseconds. A bank-structure section prints field types, offsets, sizes, units
+and example records.
+
+```bash
+conda activate root_env
+python tests/verify_builder_banks.py /path/to/recording/data/run00002.mid --manifest /path/to/recording/manifest.json
+python tests/execute_notebooks.py --notebook SAMPIC/event_builder_qa.ipynb --builder-manifest /path/to/recording/manifest.json
+```
+
+Use `--builder-root` to select a different ROOT output in the notebook runner.
+The default execution matrix runs this notebook once on builder QA data, while
+continuing to run the other notebooks against their frontend datasets. The seven
+figures are also exported as PNG and PDF under the ROOT output's `figures/`.
+
+BS00 QA checks priority order, survivor-only evaluation, and retained/rejected
+hit accounting. Cut tests include disabled, dummy, topology, reordered priorities,
+timing-disabled and all-rejected cases. `--builder-label` keeps executed notebook
+copies for different configurations in separate artifact directories.
+
+
+`HDSoC/event_builder_qa.ipynb` checks the two-board `HB00`/`HC00`/`HS00`
+products. Select `no_cuts` or `dummy_cut` in its tagged data cell. Local datasets
+are in `.artifacts/hdsoc_builder_qa/`; the notebook prints wire layouts and
+checks continuous 61-window simulated waveforms, board/source identities and
+cut counters. It saves PNG/PDF figures beside the selected ROOT file.

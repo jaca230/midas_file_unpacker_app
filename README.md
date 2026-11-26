@@ -246,3 +246,113 @@ The original input files and the app's usual `output.root` are not overwritten.
 Notebook setup, current-schema units, and the execution matrix are documented in
 [notebooks/README.md](notebooks/README.md). Run `python tests/execute_notebooks.py`
 to execute all maintained notebooks on both verified acquisition modes.
+
+## SAMPIC event-builder QA
+
+The SAMPIC profile additionally decodes the event builder's `BD00` waveform
+bank and `BTnn`/`BC00`/`BS00` diagnostic banks. It preserves the existing SD/ST/SC
+readers. New ROOT branches are:
+
+- `sampic_builder_event` and `has_sampic_builder_event`: uint64 collection bounds,
+  plus hits containing `crate`, `data` (the existing SD hit type), and `metadata`
+  (the existing SH metadata type). Encoded waveforms are signed int16; corrected
+  waveforms are volts when ADC-corrected, otherwise ADC counts. Original hardware
+  timestamps remain double nanoseconds, preserving their fractional parts.
+- `sampic_builder_diagnostics` and `has_sampic_builder_diagnostics`: a vector
+  of per-crate acquisition summaries, and an optional collector-cycle record.
+  Both `BT00` and `BT01` are retained when present in one MIDAS event. Acquisition
+  durations are microseconds; builder durations are nanoseconds. Cycle IDs join
+  summaries to collector cycles; they are not physics-event IDs. BS00 adds
+  `has_cut_summary`, `cut_cycle_id`, and ordered `cut_summaries` with cut name,
+  enabled state, signed priority and evaluated/rejected event/hit counts.
+  Counters are per-cycle deltas. Lower priority runs first (ID breaks ties);
+  later cuts only see survivors. Disabled cuts have zero counters.
+
+BD uses the `SEB1` magic/version 4 (28-byte header and 188-byte hit records); BT uses `BTS1` version 1 and BC uses `BCT1`
+version 1. Timing records are 128 bytes. BS uses `BSS1` version 1, a 24-byte header
+and 72-byte cut records, independently of timing enablement. The diagnostics stage's `bank_names`
+parameter selects input banks; the default profile enables exactly two crates.
+The builder emits diagnostic-only MIDAS events, so use the `has_*` branches
+before reading an object. Neither timing nor waveform presence implies the other.
+
+Build against the local plugin sources in the existing Conda environment:
+
+```bash
+conda activate root_env
+export UNPACKER_DATA_PRODUCTS_SAMPIC_SOURCE=/home/jack/cpp_projects/analysis_pipeline_project/plugins/sampic/unpacker_data_products_sampic
+export UNPACKER_STAGES_SAMPIC_SOURCE=/home/jack/cpp_projects/analysis_pipeline_project/plugins/sampic/unpacker_stages_sampic
+./scripts/build.sh -j 2
+```
+
+CMake needs `tbb-devel`, in addition to the TBB runtime, in that environment.
+
+Verify a recording and produce `.artifacts/builder_qa/output.root`:
+
+```bash
+python tests/verify_builder_banks.py /absolute/path/to/run00002.mid \
+  --manifest /absolute/path/to/recording/manifest.json
+python tests/check_builder_edge_cases.py
+python tests/execute_notebooks.py --notebook SAMPIC/event_builder_qa.ipynb \
+  --builder-manifest /absolute/path/to/recording/manifest.json
+```
+
+The verification compares every ROOT waveform sample, ID, timestamp and timing
+field with an independent MIDAS wire parse, then compares per-crate counts with
+the recording manifest. It checks acquisition ID continuity and collector totals.
+Retained hits plus BS rejected hits must match source totals. The checks cover
+disabled cuts, dummy rejection, topology rejection, reordered priorities, timing
+disabled and all-events-rejected recordings.
+Malformed-bank tests check truncation, versions, counts, signed ADC extremes,
+fractional double timestamps, full-width integer counters, and compatibility with the original ST/SC layouts.
+Malformed banks are logged and omitted, consistent with existing unpackers;
+verification treats any unpacker warning or error as a failure.
+
+Open `notebooks/SAMPIC/event_builder_qa.ipynb` with the `root_env` kernel. Its
+first code cell selects the ROOT file and recording manifest. It plots waveform
+examples, signal distributions, channel occupancy, built-event sizes, acquisition
+phase timings, builder-cycle timings, and per-cut counters. It prints bank field types, offsets,
+sizes, units, observed bank sizes and decoded example records. PNG/PDF figures are saved beside the
+ROOT file in `figures/`. Executed copies from the notebook runner go under
+`.artifacts/notebook_verification/builder_qa/SAMPIC/`; the source remains free of
+execution outputs. These low-rate simulated data verify the software formats and
+accounting, rather than hardware calibration or sustained throughput.
+
+
+### HDSoC event-builder banks and QA
+
+The HDSoC profile supports optional `HB00`, `HC00`, and `HS00` alongside legacy
+`HD00`/`HT00`. Builder data preserves each source board ID, nested collector
+header/packets/footer, assembled ADC waveforms, and optional collector timing.
+ROOT branches are `nalu_builder_event`, `nalu_collection_timing`, and
+`nalu_selection_summary`, each with a `has_nalu_*` presence flag. Empty or
+selection-cleared builder data remains an entry with its header and summaries.
+The decoder checks versions, sizes, source framing and counters; it applies no
+hardware calibration.
+
+To build against local HDSoC plugin checkouts in the existing ROOT environment:
+
+```bash
+export UNPACKER_DATA_PRODUCTS_NALU_SOURCE=/path/to/plugins/nalu/unpacker_data_products_nalu
+export UNPACKER_STAGES_NALU_SOURCE=/path/to/plugins/nalu/unpacker_stages_nalu
+./scripts/build.sh
+```
+
+Independently compare a simulated MIDAS recording with the unpacked ROOT fields,
+packets and waveforms (outputs stay under `.artifacts`):
+
+```bash
+python tests/verify_hdsoc_builder_banks.py /path/to/run.mid.lz4 \
+  --output .artifacts/hdsoc_builder_qa/no_cuts --simulated
+```
+
+Open `notebooks/HDSoC/event_builder_qa.ipynb` in the Python kernel from `root_env`.
+Its data cell selects `DATASET = 'no_cuts'` or `'dummy_cut'`; the local recordings
+contain two simulated boards with 61 windows / 1,952 samples per waveform.
+The notebook prints the bank field types/offsets and observed sizes, verifies
+sample and selection accounting, and plots waveform boundaries, occupancy,
+amplitudes and collection timings. Figures go beside the ROOT file. Set
+`CHECK_SIMULATOR = False` for hardware data.
+
+Decoder boundary/malformed-bank tests can be enabled with
+`cmake -S . -B build -DNALU_BUILDER_TESTS=ON` and run with
+`ctest --test-dir build/_deps/unpacker_stages_nalu-build --output-on-failure`.
